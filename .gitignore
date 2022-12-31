@@ -1,0 +1,6 @@
+.*
+!.gitignore
+!/.github/
+
+/target
+/lastfm.key

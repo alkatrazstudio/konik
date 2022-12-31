@@ -1,0 +1,66 @@
+[package]
+name = "konik"
+version = "0.1.0"
+authors = ["Alexey Parfenov <zxed@alkatrazstudio.net>"]
+categories = ["multimedia::audio"]
+edition = "2021"
+homepage = "https://github.com/alkatrazstudio/konik"
+keywords = ["audio", "player", "music", "hotkeys", "flac", "ogg", "mp3", "scrobble", "listenbrainz", "lastfm"]
+license = "GPL-3.0-only"
+publish = false
+readme = "README.md"
+repository = "https://github.com/alkatrazstudio/konik"
+rust-version = "1.66.0"
+description = "Music player controlled by global hotkeys"
+
+[package.metadata]
+organization = "Alkatraz Studio"
+qualifier = "net"
+title = "Konik"
+
+[dependencies]
+alphanumeric-sort = "1.4.4"
+alsa = "0.7.0"
+anyhow = "1.0.68"
+chrono = "0.4.23"
+clap = { version = "4.0.32", features = ["derive"] }
+cpal = "0.14.2"
+cuna = "0.6.3"
+dbus = "0.9.6"
+directories = "4.0.1"
+fd-lock = "3.0.8"
+html-escape = "0.2.13"
+interprocess = { version = "1.2.1", default_features = false }
+ksni = "0.2.0"
+lofty = "0.9.0"
+md5 = "0.7.0"
+notify-rust = { version = "4.6.0", default_features = false, features = ["d"] }
+path-absolutize = "3.0.14"
+png = "0.17.7"
+regex = "1.7.0"
+rpassword = "7.2.0"
+serde = "1.0.152"
+serde_json = "1.0.91"
+signal-hook = "0.3.14"
+souvlaki = "0.5.3"
+symphonia = { version = "0.5.1", default_features = false, features = ["flac", "mp3", "ogg", "vorbis"] }
+ureq = { version = "2.5.0", default_features = false, features = ["native-certs", "tls"] }
+url = "2.3.1"
+walkdir = "2.3.2"
+
+[dependencies.tauri-hotkey]
+git = "https://github.com/z80maniac/tauri-hotkey-rs"
+rev = "fe210a038e4b18441e4c7603ce0acae2795b3615"
+
+[build-dependencies]
+anyhow = "1.0.68"
+built = { version = "0.5.2", features = ["chrono", "git2"] }
+cargo_metadata = "0.15.2"
+handlebars = "4.3.6"
+termimad = "0.20.6"
+
+[profile.release]
+codegen-units = 1
+lto = true
+panic = "abort"
+strip = true

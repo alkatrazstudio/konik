@@ -1,0 +1,80 @@
+name: Build and release
+
+
+on:
+  push:
+    branches:
+    - master
+    tags:
+    - v*
+
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+    container: rust:1.66.0
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3.2.0
+      with:
+        persist-credentials: false
+
+    - name: Bootstrap
+      run: apt-get update -y && apt-get install -y libdbus-1-dev libasound2-dev
+
+    - name: Set Last.fm key
+      shell: bash
+      env:
+        LASTFM_KEY: ${{ secrets.LASTFM_KEY }}
+      run: echo "$LASTFM_KEY" > lastfm.key
+
+    - name: Build
+      run: cargo build --release -vv
+
+    - name: Archive
+      run: tar -cf- -C target/release konik | xz -c9e - > konik-linux.tar.xz
+
+    - name: Save
+      uses: actions/upload-artifact@v3.1.1
+      with:
+        name: release-linux
+        path: "*.tar.xz"
+
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+
+    needs:
+    - build-linux
+
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Version
+      id: version
+      run: echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+    - name: Checkout
+      uses: actions/checkout@v3.2.0
+      with:
+        persist-credentials: false
+
+    - name: Notes
+      run: grep -Pzom1 "(?s)\n[##\s]*${{ steps.version.outputs.version }}.*?\n+.*?\K.*?(\n\n|$)" CHANGELOG.md | sed 's/[^[:print:]]//g' > RELEASE.md
+
+    - name: Download
+      uses: actions/download-artifact@v3.0.1
+      with:
+        path: artifacts
+
+    - name: Rename
+      run: |
+        mv artifacts/release-linux/konik-linux.tar.xz artifacts/release-linux/konik-linux-${{ steps.version.outputs.version }}.tar.xz
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: |
+          artifacts/release-linux/*.tar.xz
+        body_path: RELEASE.md
