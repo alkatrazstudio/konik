@@ -88,14 +88,15 @@ Currently, these actions are supported:
 
 ## Build
 
-Install the dependencies:
+First, install the [Rust toolchain](https://www.rust-lang.org).
 
+Then install the dependencies:
 * development libraries for `dbus` and `alsa`
 * `pkg-config`
 
 On Ubuntu it will be `sudo apt install libdbus-1-dev libasound2-dev pkg-config`.
 
-Run `build-unix.sh` to make a release build.
+Run `cargo build --release` in the repository root to make a release build.
 
 To build Konik with Last.fm support, create a file `lastfm.key` at the repository root.
 On the first line put your API Key, on the second line put your Shared Secret.
