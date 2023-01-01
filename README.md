@@ -7,6 +7,13 @@ The player itself does not have any GUI except a tray icon and a context menu.
 Currently only for Linux with X11 and ALSA.
 
 
+## Screenshots
+
+![Popup](screenshots/popup.png "Popup")
+
+![Menu](screenshots/menu.png "Menu")
+
+
 ## Features
 
 * Formats: FLAC, OGG, MP3
