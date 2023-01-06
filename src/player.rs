@@ -6,6 +6,7 @@ use std::sync::{
     mpsc::{channel, Receiver, Sender},
     Arc, Mutex,
 };
+use std::thread::JoinHandle;
 use std::time::Duration;
 
 use anyhow::{bail, Context, Result};
@@ -667,15 +668,16 @@ impl PlayerThread {
     }
 }
 
-#[derive(Clone)]
 pub struct PlayerTx {
     tx: Arc<Mutex<Sender<PlayerCmd>>>,
+    server_thread: Option<JoinHandle<()>>,
 }
 
 impl PlayerTx {
-    pub fn new(tx: Sender<PlayerCmd>) -> Self {
+    pub fn new(tx: Sender<PlayerCmd>, server_thread: JoinHandle<()>) -> Self {
         return Self {
             tx: Arc::new(Mutex::new(tx)),
+            server_thread: Some(server_thread),
         };
     }
 
@@ -741,6 +743,12 @@ impl PlayerTx {
     pub fn exit(&self) {
         self.send(PlayerCmd::Exit);
     }
+
+    pub fn wait(&mut self) {
+        if let Some(t) = self.server_thread.take() {
+            t.join().to_anyhow().ignore_err();
+        }
+    }
 }
 
 pub fn start_thread(
@@ -749,10 +757,10 @@ pub fn start_thread(
     let (tx, rx) = channel();
     let (dtx, drx) = channel();
 
-    thread_util::thread("player server", move || {
+    let server_thread = thread_util::thread("player server", move || {
         let mut decoder = PlayerThread::new(dtx, rx, position_callbacks);
         while decoder.process() {}
     });
 
-    return (PlayerTx::new(tx), drx);
+    return (PlayerTx::new(tx, server_thread), drx);
 }

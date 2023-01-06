@@ -487,6 +487,7 @@ impl AppHandle {
     pub fn wait(self) {
         self.player_thread.join().unwrap();
         let mut app = self.app.lock().unwrap();
+        app.player.wait();
         app.lastfm.take();
         app.listenbrainz.take();
         app.tray.shutdown();
