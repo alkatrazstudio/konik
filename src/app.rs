@@ -487,11 +487,13 @@ impl AppHandle {
     pub fn wait(self) {
         self.player_thread.join().unwrap();
         let mut app = self.app.lock().unwrap();
-        app.media_controls.take();
         app.lastfm.take();
         app.listenbrainz.take();
-        app.hotkeys.unregister();
         app.tray.shutdown();
+
+        // Unregistering media_controls and hotkeys adds almost 1 second to the exiting time.
+        //app.media_controls.take();
+        //app.hotkeys.unregister();
     }
 }
 

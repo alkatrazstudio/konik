@@ -61,6 +61,7 @@ impl HotKeys {
         return Ok(());
     }
 
+    #[allow(dead_code)]
     pub fn unregister(&mut self) {
         self.manager.unregister_all().ignore_err();
     }
