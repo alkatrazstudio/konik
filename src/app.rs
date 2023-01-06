@@ -44,7 +44,7 @@ pub struct App {
     last_seek_position: Option<Duration>,
 }
 
-const VOL_STEP: f64 = 0.05;
+const VOL_STEP: f64 = 0.01;
 const POS_CALLBACK_NOW_PLAYING: PositionCallbackId = 0;
 const POS_NOW_PLAYING_SECS: f64 = 5.0;
 const POS_CALLBACK_SCROBBLE: PositionCallbackId = 1;
