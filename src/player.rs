@@ -582,7 +582,8 @@ impl PlayerThread {
                             let must_trigger = match callback.marker {
                                 PositionCallbackMarker::SecsFromStart(marker) => position >= marker,
                                 PositionCallbackMarker::SecsFromEnd(marker) => {
-                                    position >= (*duration - marker)
+                                    let pos_from_start = duration.saturating_sub(marker);
+                                    position >= pos_from_start
                                 }
                             };
                             if must_trigger {
