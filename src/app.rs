@@ -196,7 +196,7 @@ impl App {
     }
 
     fn user_action_pause(&mut self) {
-        if let PlaybackState::Playing = self.playback_state {
+        if matches!(self.playback_state, PlaybackState::Playing) {
             self.player.pause();
             self.set_playback_state(PlaybackState::Paused, None);
         }

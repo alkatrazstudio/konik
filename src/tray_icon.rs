@@ -107,7 +107,7 @@ impl TrayIcon {
     }
 
     pub fn play(&mut self) {
-        if let TrayIconImageType::Play = self.image_type {
+        if matches!(self.image_type, TrayIconImageType::Play) {
             return;
         }
         self.image_type = TrayIconImageType::Play;
@@ -118,7 +118,7 @@ impl TrayIcon {
     }
 
     pub fn play_hl(&mut self) {
-        if let TrayIconImageType::PlayHL = self.image_type {
+        if matches!(self.image_type, TrayIconImageType::PlayHL) {
             return;
         }
         self.image_type = TrayIconImageType::PlayHL;
@@ -129,7 +129,7 @@ impl TrayIcon {
     }
 
     pub fn stop(&mut self) {
-        if let TrayIconImageType::Stop = self.image_type {
+        if matches!(self.image_type, TrayIconImageType::Stop) {
             return;
         }
         self.image_type = TrayIconImageType::Stop;
@@ -140,7 +140,7 @@ impl TrayIcon {
     }
 
     pub fn pause(&mut self) {
-        if let TrayIconImageType::Pause = self.image_type {
+        if matches!(self.image_type, TrayIconImageType::Pause) {
             return;
         }
         self.image_type = TrayIconImageType::Pause;

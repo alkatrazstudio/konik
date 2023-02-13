@@ -88,14 +88,9 @@ fn write_lastfm_key_consts(out_dir: &Path) -> Result<()> {
         }
     };
 
-    let key = format!(
-        "const {}: Option<[u8; {}]> = {};",
-        LASTFM_KEY_NAME, LASTFM_BYTES_LEN, key
-    );
-    let secret = format!(
-        "const {}: Option<[u8; {}]> = {};",
-        LASTFM_SECRET_NAME, LASTFM_BYTES_LEN, secret
-    );
+    let key = format!("const {LASTFM_KEY_NAME}: Option<[u8; {LASTFM_BYTES_LEN}]> = {key};");
+    let secret =
+        format!("const {LASTFM_SECRET_NAME}: Option<[u8; {LASTFM_BYTES_LEN}]> = {secret};");
     let contents = format!("{key}\n{secret}");
 
     let filename = out_dir.join("lastfm_keys.rs");

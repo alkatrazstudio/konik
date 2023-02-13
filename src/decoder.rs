@@ -13,7 +13,10 @@ use cpal::{
     Sample, SizedSample,
 };
 use num_traits::ToPrimitive;
-use symphonia::core::{audio::RawSample, conv::{ConvertibleSample, IntoSample}};
+use symphonia::core::{
+    audio::RawSample,
+    conv::{ConvertibleSample, IntoSample},
+};
 
 use crate::{
     cue::{CueFactory, CueSheet},
@@ -25,7 +28,10 @@ use crate::{
 const BUFFER_CAPACITY: usize = 65535;
 const BUFFER_SOFT_STOP: usize = 60000;
 
-trait AudioOutputSample: Sample + SizedSample + ConvertibleSample + RawSample + ToPrimitive + Send + 'static {}
+trait AudioOutputSample:
+    Sample + SizedSample + ConvertibleSample + RawSample + ToPrimitive + Send + 'static
+{
+}
 type AudioOutputSampleStorage = f32;
 impl AudioOutputSample for AudioOutputSampleStorage {}
 
