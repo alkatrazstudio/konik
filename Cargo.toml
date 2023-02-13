@@ -10,7 +10,7 @@ license = "GPL-3.0-only"
 publish = false
 readme = "README.md"
 repository = "https://github.com/alkatrazstudio/konik"
-rust-version = "1.66.0"
+rust-version = "1.67.1"
 description = "Music player controlled by global hotkeys"
 
 [package.metadata]
@@ -21,30 +21,31 @@ title = "Konik"
 [dependencies]
 alphanumeric-sort = "1.4.4"
 alsa = "0.7.0"
-anyhow = "1.0.68"
+anyhow = "1.0.69"
 chrono = "0.4.23"
-clap = { version = "4.0.32", features = ["derive"] }
-cpal = "0.14.2"
+clap = { version = "4.1.4", features = ["derive"] }
+cpal = "0.15.0"
 cuna = "0.6.3"
-dbus = "0.9.6"
+dbus = "0.9.7"
 directories = "4.0.1"
-fd-lock = "3.0.8"
+fd-lock = "3.0.10"
 html-escape = "0.2.13"
 interprocess = { version = "1.2.1", default_features = false }
 ksni = "0.2.0"
-lofty = "0.9.0"
+lofty = "0.11.0"
 md5 = "0.7.0"
-notify-rust = { version = "4.6.0", default_features = false, features = ["d"] }
+notify-rust = { version = "4.7.0", default_features = false, features = ["d"] }
+num-traits = "0.2.15"
 path-absolutize = "3.0.14"
 png = "0.17.7"
-regex = "1.7.0"
+regex = "1.7.1"
 rpassword = "7.2.0"
 serde = "1.0.152"
-serde_json = "1.0.91"
-signal-hook = "0.3.14"
+serde_json = "1.0.93"
+signal-hook = "0.3.15"
 souvlaki = "0.5.3"
-symphonia = { version = "0.5.1", default_features = false, features = ["flac", "mp3", "ogg", "vorbis"] }
-ureq = { version = "2.5.0", default_features = false, features = ["native-certs", "tls"] }
+symphonia = { version = "0.5.2", default_features = false, features = ["flac", "mp3", "ogg", "vorbis"] }
+ureq = { version = "2.6.2", default_features = false, features = ["native-certs", "tls"] }
 url = "2.3.1"
 walkdir = "2.3.2"
 
@@ -53,11 +54,11 @@ git = "https://github.com/z80maniac/tauri-hotkey-rs"
 rev = "fe210a038e4b18441e4c7603ce0acae2795b3615"
 
 [build-dependencies]
-anyhow = "1.0.68"
-built = { version = "0.5.2", features = ["chrono", "git2"] }
-cargo_metadata = "0.15.2"
+anyhow = "1.0.69"
+built = { version = "0.6.0", features = ["chrono", "git2"] }
+cargo_metadata = "0.15.3"
 handlebars = "4.3.6"
-termimad = "0.20.6"
+termimad = "0.21.0"
 
 [profile.release]
 codegen-units = 1

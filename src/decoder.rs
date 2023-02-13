@@ -10,9 +10,10 @@ use std::{
 use anyhow::{bail, Context, Result};
 use cpal::{
     traits::{DeviceTrait, HostTrait},
-    Sample,
+    Sample, SizedSample,
 };
-use symphonia::core::{audio::RawSample, conv::ConvertibleSample};
+use num_traits::ToPrimitive;
+use symphonia::core::{audio::RawSample, conv::{ConvertibleSample, IntoSample}};
 
 use crate::{
     cue::{CueFactory, CueSheet},
@@ -24,7 +25,7 @@ use crate::{
 const BUFFER_CAPACITY: usize = 65535;
 const BUFFER_SOFT_STOP: usize = 60000;
 
-trait AudioOutputSample: Sample + ConvertibleSample + RawSample + Send + 'static {}
+trait AudioOutputSample: Sample + SizedSample + ConvertibleSample + RawSample + ToPrimitive + Send + 'static {}
 type AudioOutputSampleStorage = f32;
 impl AudioOutputSample for AudioOutputSampleStorage {}
 
@@ -396,7 +397,8 @@ fn copy_with_volume<T: AudioOutputSample>(src: &[T], dest: &mut [T], volume: f32
         }
     } else {
         for (src_sample, dst_sample) in zip_iter {
-            *dst_sample = T::from_sample(src_sample.to_f32() * volume);
+            let mul_val = src_sample.to_f32().unwrap_or_default() * volume;
+            *dst_sample = mul_val.into_sample();
         }
     }
 }
@@ -443,6 +445,7 @@ fn create_output_stream<T: AudioOutputSample>(
                 buf.drain(0..len);
             },
             move |e| e.log(),
+            None,
         )
         .context("cannot create output stream")?;
     return Ok(stream);
