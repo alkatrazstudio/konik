@@ -244,6 +244,7 @@ impl LastFM {
                 params.push((format!("duration[{i}]"), duration.as_secs().to_string()));
             }
         }
+        drop(items);
 
         let url = self
             .get_method_url("track.scrobble", &params)

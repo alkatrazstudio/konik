@@ -65,10 +65,7 @@ fn lastfm_key_to_bytes_str(name: &str, key: &str) -> Result<String> {
             LASTFM_BYTES_LEN * 2
         );
     }
-    if !chars
-        .iter()
-        .all(|c| ('0'..='9').contains(c) || ('a'..='f').contains(c))
-    {
+    if !chars.iter().all(char::is_ascii_hexdigit) {
         bail!("LastFM keys ({}) must only contain [0-9a-f] symbols", name);
     }
     let byte_strs: Vec<String> = chars

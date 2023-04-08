@@ -43,9 +43,7 @@ impl Stream for SymphoniaStream {
             hint.with_extension(ext);
         }
 
-        let metadata_opts = MetadataOptions {
-            ..Default::default()
-        };
+        let metadata_opts: MetadataOptions = MetadataOptions::default();
         let format_opts = FormatOptions {
             enable_gapless: true,
             ..Default::default()

@@ -192,6 +192,7 @@ impl ListenBrainz {
                     if !was_empty || !items.is_empty() {
                         Self::save_not_submitted_guarded(&items);
                     }
+                    drop(items);
                 }
             },
             move || {
