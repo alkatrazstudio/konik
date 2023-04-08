@@ -71,7 +71,22 @@ impl SysVol {
         return self.master()?.set(vol);
     }
 
+    fn real_step(&self, step: f64) -> Result<f64> {
+        let min_step = self.master()?.min_step();
+        if step > 0.0 {
+            if min_step > step {
+                return Ok(min_step);
+            }
+            return Ok(step);
+        }
+        if -min_step < step {
+            return Ok(-min_step);
+        }
+        return Ok(step);
+    }
+
     pub fn modify_with_step(&self, step: f64) -> Result<f64> {
+        let step = self.real_step(step)?;
         let vol = self.get()?;
         let vol = vol + step;
         let step_abs = step.abs();
@@ -125,5 +140,9 @@ impl Master<'_> {
         }
 
         return result.context("cannot set master volume");
+    }
+
+    pub fn min_step(&self) -> f64 {
+        return 1.0 / self.vol_range;
     }
 }
