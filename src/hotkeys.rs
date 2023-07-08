@@ -1,10 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // 🄯 2023, Alexey Parfenov <zxed@alkatrazstudio.net>
 
-use anyhow::Result;
-use tauri_hotkey::{Hotkey, HotkeyManager, Key};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+    thread::JoinHandle,
+    time::Duration,
+};
 
-use crate::err_util::IgnoreErr;
+use anyhow::Result;
+use global_hotkey::{
+    hotkey::{Code, HotKey},
+    GlobalHotKeyEvent, GlobalHotKeyManager,
+};
+
+use crate::thread_util;
 
 #[derive(Copy, Clone)]
 pub enum HotKeyAction {
@@ -20,49 +30,76 @@ pub enum HotKeyAction {
     SysVolDown,
 }
 
-const ACTIONS: [(Key, HotKeyAction); 10] = [
-    (Key::NUM5, HotKeyAction::StopPlay),
-    (Key::NUM6, HotKeyAction::Next),
-    (Key::NUM4, HotKeyAction::Prev),
-    (Key::NUM9, HotKeyAction::NextDir),
-    (Key::NUM7, HotKeyAction::PrevDir),
-    (Key::NUM0, HotKeyAction::PauseToggle),
-    (Key::NUM2, HotKeyAction::VolDown),
-    (Key::NUM8, HotKeyAction::VolUp),
-    (Key::NUM1, HotKeyAction::SysVolDown),
-    (Key::NUM3, HotKeyAction::SysVolUp),
+const ACTIONS: [(Code, HotKeyAction); 10] = [
+    (Code::Numpad5, HotKeyAction::StopPlay),
+    (Code::Numpad6, HotKeyAction::Next),
+    (Code::Numpad4, HotKeyAction::Prev),
+    (Code::Numpad9, HotKeyAction::NextDir),
+    (Code::Numpad7, HotKeyAction::PrevDir),
+    (Code::Numpad0, HotKeyAction::PauseToggle),
+    (Code::Numpad2, HotKeyAction::VolDown),
+    (Code::Numpad8, HotKeyAction::VolUp),
+    (Code::Numpad1, HotKeyAction::SysVolDown),
+    (Code::Numpad3, HotKeyAction::SysVolUp),
 ];
 
+const THREAD_SLEEP: Duration = Duration::from_millis(100);
+
 pub struct HotKeys {
-    manager: HotkeyManager,
+    thread: Option<JoinHandle<()>>,
+    stop_flag: Arc<Mutex<bool>>,
 }
 
 impl HotKeys {
     pub fn new() -> Self {
         return Self {
-            manager: HotkeyManager::new(),
+            thread: None,
+            stop_flag: Arc::new(Mutex::new(false)),
         };
     }
 
-    pub fn register<F>(&mut self, f: F) -> Result<()>
+    pub fn start<F>(&mut self, action_func: F) -> Result<()>
     where
         F: Fn(HotKeyAction) + Clone + Sync + Send + 'static,
     {
-        for (key, action) in &ACTIONS {
-            let f = f.clone();
-            self.manager.register(
-                Hotkey {
-                    keys: vec![*key],
-                    modifiers: vec![],
-                },
-                move || f(*action),
-            )?;
+        let mut id_action_map = HashMap::new();
+        let mut hotkeys = Vec::new();
+        for (code, action) in ACTIONS {
+            let hotkey = HotKey::new(None, code);
+            let id = hotkey.id();
+            hotkeys.push(hotkey);
+            id_action_map.insert(id, action);
         }
+
+        let manager = GlobalHotKeyManager::new()?;
+        manager.register_all(&hotkeys)?;
+
+        let stop_flag = self.stop_flag.clone();
+        let thread = thread_util::thread("hotkeys manager", move || {
+            while !*stop_flag.lock().unwrap() {
+                if let Ok(event) = GlobalHotKeyEvent::receiver().recv_timeout(THREAD_SLEEP) {
+                    if let Some(action) = id_action_map.get(&event.id) {
+                        action_func(*action);
+                    }
+                }
+            }
+            // unregistering takes almost half a second and not actually needed if the program exits
+            /*
+            for hotkey in hotkeys {
+                manager.unregister(hotkey).ignore_err();
+            }
+            */
+            drop(manager); // this will move the manager into the closure and will keep it alive
+        });
+        self.thread = Some(thread);
+
         return Ok(());
     }
 
-    #[allow(dead_code)]
-    pub fn unregister(&mut self) {
-        self.manager.unregister_all().ignore_err();
+    pub fn stop(&mut self) {
+        *self.stop_flag.lock().unwrap() = true;
+        if let Some(t) = self.thread.take() {
+            t.join().unwrap();
+        }
     }
 }

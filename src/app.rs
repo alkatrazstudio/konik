@@ -494,14 +494,14 @@ impl AppHandle {
     pub fn wait(self) {
         self.player_thread.join().unwrap();
         let mut app = self.app.lock().unwrap();
+        app.hotkeys.stop();
         app.player.wait();
         app.lastfm.take();
         app.listenbrainz.take();
         app.tray.shutdown();
 
-        // Unregistering media_controls and hotkeys adds almost 1 second to the exiting time.
-        //app.media_controls.take();
-        //app.hotkeys.unregister();
+        // Unregistering media_controls may take almost 1 second
+        // app.media_controls.take();
     }
 }
 
@@ -555,7 +555,7 @@ fn start_hotkey_thread(app_arc: &Arc<Mutex<App>>) -> Result<()> {
         .lock()
         .unwrap()
         .hotkeys
-        .register(move |action| {
+        .start(move |action| {
             let mut app = app_arc.lock().unwrap();
             app.process_hotkey(action);
         })

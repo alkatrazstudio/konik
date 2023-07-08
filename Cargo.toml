@@ -29,6 +29,7 @@ cuna = "0.7.0"
 dbus = "0.9.7"
 directories = "5.0.1"
 fd-lock = "4.0.0"
+global-hotkey = "0.2.2"
 html-escape = "0.2.13"
 interprocess = { version = "1.2.1", default_features = false }
 ksni = "0.2.1"
@@ -48,10 +49,6 @@ symphonia = { version = "0.5.3", default_features = false, features = ["flac", "
 ureq = { version = "2.7.1", default_features = false, features = ["native-certs", "tls"] }
 url = "2.4.0"
 walkdir = "2.3.3"
-
-[dependencies.tauri-hotkey]
-git = "https://github.com/z80maniac/tauri-hotkey-rs"
-rev = "fe210a038e4b18441e4c7603ce0acae2795b3615"
 
 [build-dependencies]
 anyhow = "1.0.71"
