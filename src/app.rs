@@ -35,7 +35,6 @@ pub struct App {
     meta: TrackMeta,
     hotkeys: HotKeys,
     tray: TrayIcon,
-    sys_vol: SysVol,
     listenbrainz: Option<ListenBrainz>,
     lastfm: Option<LastFM>,
     state: AppState,
@@ -230,12 +229,20 @@ impl App {
         }
     }
 
+    fn change_volume(&mut self, step: f64) {
+        // re-create SysVol everytime, to always use the current device
+        match SysVol::new() {
+            Ok(sys_vol) => self.process_sys_vol_result(sys_vol.modify_with_step(step)),
+            Err(e) => e.context("cannot create system volume controller").log(),
+        };
+    }
+
     fn user_action_sysvol_down(&mut self) {
-        self.process_sys_vol_result(self.sys_vol.modify_with_step(-VOL_STEP));
+        self.change_volume(-VOL_STEP);
     }
 
     fn user_action_sysvol_up(&mut self) {
-        self.process_sys_vol_result(self.sys_vol.modify_with_step(VOL_STEP));
+        self.change_volume(VOL_STEP);
     }
 
     fn set_vol(&mut self, new_volume: f32) {
@@ -523,7 +530,6 @@ pub fn start(cli_args: &Args) -> Result<AppHandle> {
         meta: TrackMeta::default(),
         hotkeys: HotKeys::new(),
         tray: TrayIcon::new().context("cannot create tray icon")?,
-        sys_vol: SysVol::new().context("cannot create system volume controoler")?,
         listenbrainz,
         lastfm,
         state,
