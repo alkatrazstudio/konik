@@ -1,6 +1,12 @@
 # Konik - CHANGELOG
 
 
+## v0.1.3 (July 9, 2023)
+
+- Fixed: system volume is stuck when 1% volume step is not supported
+- Fixed: can't modify the system volume after changing the current playback device
+
+
 ## v0.1.2 (February 19, 2023)
 
 - Fixed: crashing on short tracks

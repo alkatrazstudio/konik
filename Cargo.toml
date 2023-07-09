@@ -1,6 +1,6 @@
 [package]
 name = "konik"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Alexey Parfenov <zxed@alkatrazstudio.net>"]
 categories = ["multimedia::audio"]
 edition = "2021"
