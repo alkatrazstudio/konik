@@ -206,8 +206,8 @@ impl SymphoniaStream {
             return None;
         }
         self.metadata_sent = true;
-        let meta = Self::get_lofty_meta(&self.path);
-        return meta;
+        let meta = Self::get_lofty_meta(&self.path).unwrap_or_default();
+        return Some(meta);
     }
 
     fn fill_lofty_tag(tag: &Tag, info: &mut TrackMeta) {
