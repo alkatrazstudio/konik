@@ -1,6 +1,12 @@
 # Konik - CHANGELOG
 
 
+## v0.1.4 (September 3, 2023)
+
+- Fixed: various bugs when the tags cannot be retrieved
+- Improved: start and end of startup and shutdown are now clearly marked in the terminal output
+
+
 ## v0.1.3 (July 9, 2023)
 
 - Fixed: system volume is stuck when 1% volume step is not supported
