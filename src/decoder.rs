@@ -443,6 +443,7 @@ fn create_output_stream<T: AudioOutputSample>(
                     len = (len + s2.len()).min(data.len());
                     //data[len1..len].clone_from_slice(&s2[0..len - len1]);
                     copy_with_volume(&s2[0..len - len1], &mut data[len1..len], *volume);
+                    drop(volume);
                     if len < data.len() {
                         eprintln_with_date(format!("underrun: {} samples", data.len() - len));
                         data[len..].iter_mut().for_each(|x| *x = T::MID);

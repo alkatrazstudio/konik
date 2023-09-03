@@ -12,11 +12,11 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-22.04
-    container: rust:1.70.0
+    container: rust:1.72.0
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3.5.3
+      uses: actions/checkout@v3.6.0
       with:
         persist-credentials: false
 
@@ -55,7 +55,7 @@ jobs:
       run: echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
 
     - name: Checkout
-      uses: actions/checkout@v3.5.3
+      uses: actions/checkout@v3.6.0
       with:
         persist-credentials: false
 
