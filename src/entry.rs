@@ -45,7 +45,7 @@ pub fn main() -> Result<()> {
     let singleton_name = format!("{}-{SINGLETON_ID}", project_info::name());
     let single = Singleton::new(&singleton_name, move || Some(singleton_data))?;
     if let Some(single) = single {
-        println_with_date("starting...");
+        println_with_date("starting up...");
         let app_handle = app::start(&cli_args)?;
 
         let app = app_handle.app.clone();
@@ -58,6 +58,7 @@ pub fn main() -> Result<()> {
             app.lock().unwrap().quit();
         });
 
+        println_with_date("started");
         app_handle.wait();
         println_with_date("shutdown complete");
     }

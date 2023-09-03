@@ -176,7 +176,7 @@ impl App {
     }
 
     fn user_action_quit(&self) {
-        println_with_date("exiting...");
+        println_with_date("shutting down...");
         self.player.exit();
     }
 
