@@ -135,8 +135,14 @@ impl ListenBrainz {
             payload: vec![payload],
         };
 
-        self.send(request, || {}, || {})
-            .context("cannot perform ListenBrainz playing_now API call")?;
+        self.send(
+            request,
+            |_| {},
+            |json| {
+                eprintln_with_date(json);
+            },
+        )
+        .context("cannot perform ListenBrainz playing_now API call")?;
 
         return Ok(());
     }
@@ -186,7 +192,7 @@ impl ListenBrainz {
             request,
             {
                 let items_arc = self.not_submitted.clone();
-                move || {
+                move |_| {
                     let mut items = items_arc.lock().unwrap();
                     items.retain(|i| !timestamps.contains(&i.timestamp));
                     if !was_empty || !items.is_empty() {
@@ -195,7 +201,8 @@ impl ListenBrainz {
                     drop(items);
                 }
             },
-            move || {
+            move |json| {
+                eprintln_with_date(json);
                 let items = items_arc.lock().unwrap();
                 Self::save_not_submitted_guarded(&items);
             },
@@ -219,8 +226,8 @@ impl ListenBrainz {
 
     fn send<S, E>(&mut self, request: Request, on_succ: S, on_err: E) -> Result<()>
     where
-        S: FnOnce() + Send + 'static,
-        E: FnOnce() + Send + 'static,
+        S: FnOnce(String) + Send + 'static,
+        E: FnOnce(String) + Send + 'static,
     {
         if let Some(token) = &self.token {
             let auth = format!("Token {}", &token);
@@ -231,18 +238,24 @@ impl ListenBrainz {
                 let result = ureq::post(SUBMIT_ENDPOINT)
                     .set("Authorization", &auth)
                     .set("Content-Type", "application/json")
-                    .send_string(&json)
-                    .with_context(|| {
-                        format!(
+                    .send_string(&json);
+
+                match result {
+                    Ok(resp) => {
+                        let json = resp.into_string().unwrap_or_default();
+                        on_succ(json.trim().to_string());
+                    }
+                    Err(e) => {
+                        let json = match e.into_response() {
+                            Some(resp) => resp.into_string().unwrap_or_default(),
+                            None => String::new(),
+                        };
+                        on_err(json.trim().to_string());
+                        println_with_date(format!(
                             "cannot perform ListenBrainz API call: {:?}",
                             &request.listen_type
-                        )
-                    });
-
-                if result.to_bool() {
-                    on_succ();
-                } else {
-                    on_err();
+                        ));
+                    }
                 }
             });
             self.api_thread = Some(handle);
