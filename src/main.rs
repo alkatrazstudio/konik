@@ -7,7 +7,9 @@
     clippy::needless_return,
 
     // pedantic
+    clippy::doc_markdown,
     clippy::module_name_repetitions,
+    clippy::needless_raw_string_hashes,
     clippy::redundant_closure_for_method_calls,
     clippy::cast_possible_truncation,
     clippy::cast_precision_loss,

@@ -32,8 +32,7 @@ trait AudioOutputSample:
     Sample + SizedSample + ConvertibleSample + RawSample + ToPrimitive + Send + 'static
 {
 }
-type AudioOutputSampleStorage = f32;
-impl AudioOutputSample for AudioOutputSampleStorage {}
+impl AudioOutputSample for f32 {}
 
 pub struct Decoder {
     stream: Option<Box<dyn Stream>>,
@@ -44,7 +43,7 @@ pub struct Decoder {
     pub track_meta: Option<TrackMeta>,
     pub new_track_meta: Option<TrackMeta>,
     buf: Arc<Mutex<VecDeque<f32>>>,
-    decoder_position: Duration,
+    position: Duration,
     at_end: bool,
     wait_empty_buf: bool,
     cue_factory: CueFactory,
@@ -74,7 +73,7 @@ impl Decoder {
             track_meta: None,
             new_track_meta: None,
             buf,
-            decoder_position: Duration::ZERO,
+            position: Duration::ZERO,
             at_end: false,
             wait_empty_buf: false,
             cue_factory: CueFactory::new(),
@@ -92,7 +91,7 @@ impl Decoder {
         self.track_meta = None;
         self.new_track_meta = None;
         self.cue_sheet = None;
-        self.decoder_position = Duration::default();
+        self.position = Duration::default();
         self.buf.lock().unwrap().clear();
     }
 
@@ -249,7 +248,7 @@ impl Decoder {
 
     pub fn playback_position(&self) -> Duration {
         let buf_dur = self.buffer_duration().ok_or_default();
-        let mut pos = self.decoder_position.saturating_sub(buf_dur);
+        let mut pos = self.position.saturating_sub(buf_dur);
         if let Some((sheet, index)) = self.sheet_and_index() {
             let start = sheet.track_start(index).unwrap_or_default();
             pos = pos.saturating_sub(start);
@@ -259,7 +258,7 @@ impl Decoder {
 
     pub fn valid_playback_position(&self) -> Result<Duration> {
         let buf_dur = self.buffer_duration()?;
-        let mut pos = self.decoder_position.saturating_sub(buf_dur);
+        let mut pos = self.position.saturating_sub(buf_dur);
         if let Some((sheet, index)) = self.sheet_and_index() {
             let start = sheet.track_start(index)?;
             pos = pos.saturating_sub(start);
@@ -317,7 +316,7 @@ impl Decoder {
                 Some(track_meta.clone())
             };
             self.file_meta = Some(track_meta.clone());
-            self.new_track_meta = self.track_meta.clone();
+            self.new_track_meta.clone_from(&self.track_meta);
         }
     }
 
@@ -353,7 +352,7 @@ impl Decoder {
                 }
 
                 if let Some(position) = self.packet_meta.as_ref().and_then(|m| m.position) {
-                    self.decoder_position = position;
+                    self.position = position;
                     if let Some((sheet, index)) = self.sheet_and_index() {
                         let pos_index = sheet.track_index_by_position(position);
                         if pos_index > index {

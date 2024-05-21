@@ -35,7 +35,7 @@ fn uri_to_str(uri_str: &String) -> PathBuf {
                 Ok(path) => {
                     return path;
                 }
-                Err(_) => {
+                Err(()) => {
                     anyhow!("cannot get filesystem path from URL: {uri_str}").log();
                 }
             },

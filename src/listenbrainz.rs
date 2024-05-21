@@ -127,7 +127,7 @@ impl ListenBrainz {
         track: &str,
         number: Option<usize>,
     ) -> Result<()> {
-        let release_name = album.as_ref().cloned();
+        let release_name = album.clone();
 
         let payload = Payload {
             listened_at: None,
@@ -168,7 +168,7 @@ impl ListenBrainz {
             .duration_since(UNIX_EPOCH)
             .context("cannot get current timestamp")?
             .as_secs();
-        let release_name = album.as_ref().cloned();
+        let release_name = album.clone();
 
         let listen = ListenItem {
             artist: artist.to_string(),
@@ -260,7 +260,7 @@ impl ListenBrainz {
                             None => String::new(),
                         };
                         on_err(json.trim().to_string());
-                        println_with_date(format!(
+                        eprintln_with_date(format!(
                             "cannot perform ListenBrainz API call: {:?}",
                             &request.listen_type
                         ));

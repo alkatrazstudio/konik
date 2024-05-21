@@ -89,6 +89,7 @@ where
         let file = OpenOptions::new()
             .write(true)
             .create(true)
+            .truncate(true)
             .open(&filename)
             .with_context(|| format!("cannot open {filename:?}"))?;
         let mut file = RwLock::new(file);

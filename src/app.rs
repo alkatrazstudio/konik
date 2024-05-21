@@ -74,7 +74,7 @@ impl App {
         self.user_action_quit();
     }
 
-    fn init_playlist(&self, paths: &Vec<String>) {
+    fn init_playlist(&self, paths: &[String]) {
         let tracks;
         let auto_play;
         let playlist_index;
