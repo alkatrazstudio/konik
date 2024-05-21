@@ -21,6 +21,15 @@ const SUBMIT_ENDPOINT: &str = "https://api.listenbrainz.org/1/submit-listens";
 const VALIDATE_ENDPOINT: &str = "https://api.listenbrainz.org/1/validate-token";
 const MAX_IMPORT: usize = 25; // https://listenbrainz.readthedocs.io/en/production/dev/api/#listenbrainz.webserver.views.api_tools.MAX_LISTEN_SIZE
 
+fn skip_if_none_or_empty(x: &Option<String>) -> bool {
+    if let Some(val) = x {
+        if !val.is_empty() {
+            return false;
+        }
+    }
+    return true;
+}
+
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "snake_case")]
 enum ListenType {
@@ -39,7 +48,7 @@ struct AdditionalInfo {
 struct TrackMetaData {
     artist_name: String,
     track_name: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "skip_if_none_or_empty")]
     release_name: Option<String>,
     additional_info: AdditionalInfo,
 }
