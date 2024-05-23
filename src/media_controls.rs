@@ -28,11 +28,7 @@ impl MediaControls {
     where
         F: Fn(MediaControlEvent) + Send + 'static,
     {
-        return self
-            .controls
-            .attach(event_handler)
-            .to_anyhow()
-            .context("cannot attach");
+        return self.controls.attach(event_handler).context("cannot attach");
     }
 
     pub fn set_state(&mut self, state: &PlaybackState, position: Option<Duration>) -> Result<()> {
@@ -43,14 +39,12 @@ impl MediaControls {
                         .set_playback(MediaPlayback::Playing {
                             progress: Some(MediaPosition(position)),
                         })
-                        .to_anyhow()
                         .context("cannot set playing state")?;
                 }
             }
             PlaybackState::Stopped => {
                 self.controls
                     .set_playback(MediaPlayback::Stopped)
-                    .to_anyhow()
                     .context("cannot set stopped state")?;
             }
             PlaybackState::Paused => {
@@ -59,7 +53,6 @@ impl MediaControls {
                         .set_playback(MediaPlayback::Paused {
                             progress: Some(MediaPosition(position)),
                         })
-                        .to_anyhow()
                         .context("cannot set paused state")?;
                 }
             }
@@ -80,7 +73,6 @@ impl MediaControls {
                 duration: Some(track_meta.duration),
                 ..Default::default()
             })
-            .to_anyhow()
             .context("cannot set metadata")?;
         return Ok(());
     }

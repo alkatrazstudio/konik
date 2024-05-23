@@ -4,7 +4,11 @@
 use std::{collections::VecDeque, fs::File, path::Path, time::Duration};
 
 use anyhow::{bail, Context, Result};
-use lofty::{Accessor, AudioFile, Probe, Tag, TaggedFileExt};
+use lofty::{
+    file::{AudioFile, TaggedFileExt},
+    probe::Probe,
+    tag::{Accessor, Tag},
+};
 use symphonia::core::{
     audio::{AudioBufferRef, SampleBuffer},
     codecs::{Decoder, DecoderOptions, CODEC_TYPE_NULL},

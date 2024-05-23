@@ -11,10 +11,10 @@ use std::{
 use anyhow::Result;
 use global_hotkey::{
     hotkey::{Code, HotKey},
-    GlobalHotKeyEvent, GlobalHotKeyManager,
+    GlobalHotKeyEvent, GlobalHotKeyManager, HotKeyState,
 };
 
-use crate::thread_util;
+use crate::{err_util::IgnoreErr, thread_util};
 
 #[derive(Copy, Clone)]
 pub enum HotKeyAction {
@@ -78,17 +78,14 @@ impl HotKeys {
         let thread = thread_util::thread("hotkeys manager", move || {
             while !*stop_flag.lock().unwrap() {
                 if let Ok(event) = GlobalHotKeyEvent::receiver().recv_timeout(THREAD_SLEEP) {
-                    if let Some(action) = id_action_map.get(&event.id) {
-                        action_func(*action);
+                    if event.state == HotKeyState::Pressed {
+                        if let Some(action) = id_action_map.get(&event.id) {
+                            action_func(*action);
+                        }
                     }
                 }
             }
-            // unregistering takes almost half a second and not actually needed if the program exits
-            /*
-            for hotkey in hotkeys {
-                manager.unregister(hotkey).ignore_err();
-            }
-            */
+            manager.unregister_all(&hotkeys).ignore_err();
             drop(manager); // this will move the manager into the closure and will keep it alive
         });
         self.thread = Some(thread);

@@ -481,6 +481,7 @@ impl App {
             MediaControlEvent::Quit => self.user_action_quit(),
             MediaControlEvent::SetPosition(pos) => self.user_action_seek_to(pos.0),
             MediaControlEvent::OpenUri(uri) => self.user_action_open_uri(uri),
+            MediaControlEvent::SetVolume(_) => {}
         }
     }
 }

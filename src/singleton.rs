@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // 🄯 2023, Alexey Parfenov <zxed@alkatrazstudio.net>
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use fd_lock::RwLock;
-use interprocess::local_socket::{LocalSocketListener, LocalSocketStream, NameTypeSupport};
+use interprocess::local_socket::{
+    traits::{ListenerExt, Stream as StreamTrait},
+    GenericFilePath, GenericNamespaced, ListenerOptions, Name, NameType, Stream, ToFsName,
+    ToNsName,
+};
 use serde::{Deserialize, Serialize};
 use std::{
     env,
@@ -25,7 +29,7 @@ where
 {
     flock: Option<RwLock<File>>,
     flock_filename: PathBuf,
-    sock_name: String,
+    name: String,
     phantom_data: PhantomData<T>,
 }
 
@@ -39,7 +43,7 @@ where
     {
         let sock_name = Self::sock_name(name).context("cannot get socket name")?;
 
-        if let Ok(conn) = LocalSocketStream::connect(sock_name.clone()) {
+        if let Ok(conn) = Stream::connect(sock_name) {
             let send_data = pass_func();
             let mut buf = BufReader::new(conn);
             if let Some(send_data) = send_data {
@@ -56,24 +60,16 @@ where
         return Ok(Some(Self {
             flock: Some(flock),
             flock_filename,
-            sock_name,
+            name: name.to_string(),
             phantom_data: PhantomData {},
         }));
     }
 
-    fn sock_name(name: &str) -> Result<String> {
-        let sock_name = {
-            match NameTypeSupport::query() {
-                NameTypeSupport::OnlyPaths => {
-                    let mut filename = env::temp_dir();
-                    filename.push(name);
-                    match filename.to_str() {
-                        Some(s) => s.to_string(),
-                        None => bail!("cannot convert lock file path to string {:?}", filename),
-                    }
-                }
-                NameTypeSupport::OnlyNamespaced | NameTypeSupport::Both => format!("@{name}"),
-            }
+    fn sock_name(name: &str) -> Result<Name> {
+        let sock_name = if GenericNamespaced::is_supported() {
+            name.to_ns_name::<GenericNamespaced>()?
+        } else {
+            name.to_fs_name::<GenericFilePath>()?
         };
         return Ok(sock_name);
     }
@@ -101,9 +97,9 @@ where
         return Ok((file, filename));
     }
 
-    fn process_connection(incoming: io::Result<LocalSocketStream>) -> Result<T> {
-        let connection = incoming.context("failed to get incoming connection")?;
-        let mut buf = BufReader::new(connection);
+    fn process_connection(stream_result: io::Result<Stream>) -> Result<T> {
+        let stream = stream_result.context("failed to get incoming connection")?;
+        let mut buf = BufReader::new(stream);
         let mut json = String::default();
         buf.read_line(&mut json)
             .context("cannot read socket buffer")?;
@@ -116,19 +112,17 @@ where
     where
         F: Fn(T) + Clone + Sync + Send + 'static,
     {
-        let sock_name = self.sock_name.clone();
-        let listener =
-            LocalSocketListener::bind(sock_name).context("cannot bind to local socket")?;
-
+        let sock_name = Self::sock_name(&self.name)?;
+        let opts = ListenerOptions::new().name(sock_name);
+        let listener = opts.create_sync().context("cannot bind to local socket")?;
         let t = thread_util::thread("singleton server", move || {
-            for conn in listener.incoming() {
-                match Self::process_connection(conn) {
+            for stream_result in listener.incoming() {
+                match Self::process_connection(stream_result) {
                     Ok(data) => on_data(data),
                     Err(e) => e.context("cannot process incoming connection").log(),
                 }
             }
         });
-
         return Ok(t);
     }
 }

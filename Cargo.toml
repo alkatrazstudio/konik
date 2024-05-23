@@ -10,7 +10,7 @@ license = "GPL-3.0-only"
 publish = false
 readme = "README.md"
 repository = "https://github.com/alkatrazstudio/konik"
-rust-version = "1.72.0"
+rust-version = "1.78.0"
 description = "Music player controlled by global hotkeys"
 
 [package.metadata]
@@ -19,43 +19,43 @@ qualifier = "net"
 title = "Konik"
 
 [dependencies]
-alphanumeric-sort = "=1.5.1"
-alsa = "=0.7.1"
-anyhow = "=1.0.75"
-chrono = "=0.4.27"
-clap = { version = "=4.4.2", features = ["derive"] }
-cpal = "=0.15.2"
+alphanumeric-sort = "=1.5.3"
+alsa = "=0.9.0"
+anyhow = "=1.0.86"
+chrono = "=0.4.38"
+clap = { version = "=4.5.4", features = ["derive"] }
+cpal = "=0.15.3"
 cuna = "=0.7.0"
 dbus = "=0.9.7"
 directories = "=5.0.1"
-fd-lock = "=4.0.0"
-global-hotkey = "=0.3.0"
+fd-lock = "=4.0.2"
+global-hotkey = "=0.5.3"
 html-escape = "=0.2.13"
-interprocess = { version = "=1.2.1", default_features = false }
-ksni = "=0.2.1"
-lofty = "=0.15.0"
+interprocess = { version = "=2.1.0", default_features = false }
+ksni = "=0.2.2"
+lofty = "=0.19.2"
 md5 = "=0.7.0"
-notify-rust = { version = "=4.9.0", default_features = false, features = ["d"] }
-num-traits = "=0.2.16"
-path-absolutize = "=3.1.0"
-png = "=0.17.10"
-regex = "=1.9.5"
-rpassword = "=7.2.0"
-serde = "=1.0.188"
-serde_json = "=1.0.105"
+notify-rust = { version = "=4.11.0", default_features = false, features = ["d"] }
+num-traits = "=0.2.19"
+path-absolutize = "=3.1.1"
+png = "=0.17.13"
+regex = "=1.10.4"
+rpassword = "=7.3.1"
+serde = "=1.0.202"
+serde_json = "=1.0.117"
 signal-hook = "=0.3.17"
-souvlaki = "=0.6.1"
-symphonia = { version = "=0.5.3", default_features = false, features = ["flac", "mp3", "ogg", "vorbis"] }
-ureq = { version = "=2.7.1", default_features = false, features = ["native-certs", "tls"] }
-url = "=2.4.1"
-walkdir = "=2.3.3"
+souvlaki = "=0.7.3"
+symphonia = { version = "=0.5.4", default_features = false, features = ["flac", "mp3", "ogg", "vorbis"] }
+ureq = { version = "=2.9.7", default_features = false, features = ["native-certs", "tls"] }
+url = "=2.5.0"
+walkdir = "=2.5.0"
 
 [build-dependencies]
-anyhow = "=1.0.75"
-built = { version = "=0.6.1", features = ["chrono", "git2"] }
-cargo_metadata = "=0.17.0"
-handlebars = "=4.4.0"
-termimad = "=0.25.1"
+anyhow = "=1.0.86"
+built = { version = "=0.7.3", features = ["chrono", "git2"] }
+cargo_metadata = "=0.18.1"
+handlebars = "=5.1.2"
+termimad = "=0.29.2"
 
 [profile.release]
 codegen-units = 1
