@@ -245,25 +245,28 @@ impl App {
         self.change_volume(VOL_STEP);
     }
 
-    fn set_vol(&mut self, new_volume: f32) {
+    fn set_vol(&mut self, new_volume: f32, show_popup: bool) {
         let new_volume = new_volume.clamp(0.0, 1.0);
         let steps_count = (new_volume / VOL_STEP as f32).round();
         let new_volume = steps_count * VOL_STEP as f32;
         self.state.volume = new_volume;
         self.player.set_volume(new_volume);
-
-        self.update_tray(true);
+        self.update_tray(show_popup);
         self.state.save().ignore_err();
     }
 
     fn user_action_vol_down(&mut self) {
         let new_volume = self.state.volume - VOL_STEP as f32;
-        self.set_vol(new_volume);
+        self.set_vol(new_volume, true);
     }
 
     fn user_action_vol_up(&mut self) {
         let new_volume = self.state.volume + VOL_STEP as f32;
-        self.set_vol(new_volume);
+        self.set_vol(new_volume, true);
+    }
+
+    fn user_action_set_vol(&mut self, new_volume: f32) {
+        self.set_vol(new_volume, false);
     }
 
     fn user_action_seek_by(&self, forward: bool, length: Duration) {
@@ -334,6 +337,9 @@ impl App {
 
             self.media_controls
                 .mut_map(|c| c.set_metadata(&self.meta).ignore_err());
+            self.media_controls
+                .mut_map(|c| c.set_volume(self.state.volume));
+            self.player.request_position(); // because set_volume resets the position
 
             if show_popup {
                 self.popup.show(&tooltip);
@@ -439,6 +445,9 @@ impl App {
             PlayerResponse::PlaybackStateChanged { state, position } => {
                 self.set_playback_state(state, Some(position));
             }
+            PlayerResponse::PositionRequested { position } => {
+                self.set_playback_state(self.playback_state.clone(), Some(position));
+            }
             PlayerResponse::Seeked { position } => {
                 let state = self.playback_state.clone();
                 self.last_seek_position = Some(position);
@@ -481,7 +490,7 @@ impl App {
             MediaControlEvent::Quit => self.user_action_quit(),
             MediaControlEvent::SetPosition(pos) => self.user_action_seek_to(pos.0),
             MediaControlEvent::OpenUri(uri) => self.user_action_open_uri(uri),
-            MediaControlEvent::SetVolume(_) => {}
+            MediaControlEvent::SetVolume(vol) => self.user_action_set_vol(vol as f32),
         }
     }
 }

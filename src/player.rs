@@ -39,6 +39,7 @@ pub enum PlayerCmd {
     Pause,
     UnPause,
     Stop,
+    RequestPosition,
 
     Next,
     Prev,
@@ -72,6 +73,9 @@ pub enum PlayerResponse {
     },
     PlaybackStateChanged {
         state: PlaybackState,
+        position: Duration,
+    },
+    PositionRequested {
         position: Duration,
     },
     PositionCallback {
@@ -468,6 +472,13 @@ impl PlayerThread {
         return Ok(());
     }
 
+    fn send_position(&self) {
+        let position = self.decoder.playback_position();
+        self.tx
+            .send(PlayerResponse::PositionRequested { position })
+            .unwrap();
+    }
+
     fn process_client_cmd(&mut self) -> Result<bool> {
         let recv_timeout = if self.need_fast_read {
             Duration::ZERO
@@ -510,6 +521,9 @@ impl PlayerThread {
                 }
                 PlayerCmd::Stop => {
                     self.stop();
+                }
+                PlayerCmd::RequestPosition => {
+                    self.send_position();
                 }
                 PlayerCmd::Next => {
                     self.stop();
@@ -711,6 +725,10 @@ impl PlayerTx {
 
     pub fn stop(&self) {
         self.send(PlayerCmd::Stop);
+    }
+
+    pub fn request_position(&self) {
+        self.send(PlayerCmd::RequestPosition);
     }
 
     pub fn next(&self) {

@@ -76,4 +76,11 @@ impl MediaControls {
             .context("cannot set metadata")?;
         return Ok(());
     }
+
+    pub fn set_volume(&mut self, volume: f32) -> Result<()> {
+        self.controls
+            .set_volume(volume as f64)
+            .context("cannot set volume")?;
+        return Ok(());
+    }
 }
