@@ -1,6 +1,12 @@
 # Konik - CHANGELOG
 
 
+## v0.2.0 (May 25, 2024)
+
+- Fixed: sending invalid payload to ListenBrainz
+- Added: MPRIS controls for volume
+
+
 ## v0.1.4 (September 3, 2023)
 
 - Fixed: various bugs when the tags cannot be retrieved
