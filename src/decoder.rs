@@ -370,7 +370,7 @@ impl Decoder {
         return DecoderReadResult::BufferFull;
     }
 
-    pub fn create_output_stream(&mut self) -> Option<cpal::Stream> {
+    pub fn create_output_stream(&self) -> Option<cpal::Stream> {
         if self.stream.is_some() {
             if let Some(meta) = &self.packet_meta {
                 return Some(

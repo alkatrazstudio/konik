@@ -25,7 +25,7 @@ fn run_method(path: &str, method: &str) -> Result<()> {
     match Url::from_file_path(path) {
         Ok(url) => {
             let url_str = url.as_str();
-            proxy
+            let _: () = proxy
                 .method_call("org.freedesktop.FileManager1", method, (vec![url_str], ""))
                 .with_context(|| format!("failed to call D-Bus method {method} on {url_str}"))?;
         }

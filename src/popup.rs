@@ -19,7 +19,7 @@ impl Popup {
         };
     }
 
-    pub fn show(&mut self, body: &str) {
+    pub fn show(&self, body: &str) {
         let handle_id = self.handle_id.clone();
 
         let body = body.to_string();

@@ -80,7 +80,6 @@ pub enum PlayerResponse {
     },
     PositionCallback {
         callback: PositionCallback,
-        position: Duration,
     },
     PlaylistEnded,
     Seeked {
@@ -604,7 +603,6 @@ impl PlayerThread {
                                 self.tx
                                     .send(PlayerResponse::PositionCallback {
                                         callback: callback.clone(),
-                                        position,
                                     })
                                     .unwrap();
                                 self.triggered_callbacks.push(callback.id);

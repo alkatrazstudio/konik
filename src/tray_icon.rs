@@ -97,7 +97,7 @@ impl TrayIcon {
         });
     }
 
-    pub fn add_menu_item<F>(&mut self, menu_item_func: F)
+    pub fn add_menu_item<F>(&self, menu_item_func: F)
     where
         F: Fn() -> TrayMenuItem,
     {
@@ -154,7 +154,7 @@ impl TrayIcon {
         return self.image_type;
     }
 
-    pub fn set_tooltip(&mut self, text: &str) {
+    pub fn set_tooltip(&self, text: &str) {
         self.handle.update(move |data| {
             data.tooltip = text.to_string();
         });

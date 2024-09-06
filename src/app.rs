@@ -218,7 +218,7 @@ impl App {
         }
     }
 
-    fn process_sys_vol_result(&mut self, result: Result<f64>) {
+    fn process_sys_vol_result(&self, result: Result<f64>) {
         match result {
             Ok(vol) => {
                 #[allow(clippy::cast_sign_loss)]
@@ -229,7 +229,7 @@ impl App {
         }
     }
 
-    fn change_volume(&mut self, step: f64) {
+    fn change_volume(&self, step: f64) {
         // re-create SysVol everytime, to always use the current device
         match SysVol::new() {
             Ok(sys_vol) => self.process_sys_vol_result(sys_vol.modify_with_step(step)),
@@ -237,11 +237,11 @@ impl App {
         };
     }
 
-    fn user_action_sysvol_down(&mut self) {
+    fn user_action_sysvol_down(&self) {
         self.change_volume(-VOL_STEP);
     }
 
-    fn user_action_sysvol_up(&mut self) {
+    fn user_action_sysvol_up(&self) {
         self.change_volume(VOL_STEP);
     }
 
@@ -597,7 +597,7 @@ fn start_player_response_thread(
 }
 
 fn set_tray_menu(app_arc: &Arc<Mutex<App>>) {
-    let mut app = app_arc.lock().unwrap();
+    let app = app_arc.lock().unwrap();
 
     app.tray.add_menu_item(|| {
         TrayMenuItem::new("Show current file", {

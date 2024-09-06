@@ -12,11 +12,11 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-24.04
-    container: rust:1.78.0
+    container: rust:1.81.0
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4.1.6
+      uses: actions/checkout@v4.1.7
       with:
         persist-credentials: false
 
@@ -36,7 +36,7 @@ jobs:
       run: tar -cf- -C target/release konik | xz -c9e - > konik-linux.tar.xz
 
     - name: Save
-      uses: actions/upload-artifact@v4.3.3
+      uses: actions/upload-artifact@v4.4.0
       with:
         name: release-linux
         path: "*.tar.xz"
@@ -55,7 +55,7 @@ jobs:
       run: echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
 
     - name: Checkout
-      uses: actions/checkout@v4.1.6
+      uses: actions/checkout@v4.1.7
       with:
         persist-credentials: false
 
@@ -63,7 +63,7 @@ jobs:
       run: grep -Pzom1 "(?s)\n[##\s]*${{ steps.version.outputs.version }}.*?\n+.*?\K.*?(\n\n|$)" CHANGELOG.md | sed 's/[^[:print:]]//g' > RELEASE.md
 
     - name: Download
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v4.1.8
       with:
         path: artifacts
 
@@ -71,7 +71,7 @@ jobs:
       run: |
         mv artifacts/release-linux/konik-linux.tar.xz artifacts/release-linux/konik-linux-${{ steps.version.outputs.version }}.tar.xz
     - name: Release
-      uses: softprops/action-gh-release@v2.0.5
+      uses: softprops/action-gh-release@v2.0.8
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
