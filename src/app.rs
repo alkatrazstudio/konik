@@ -337,8 +337,6 @@ impl App {
 
             self.media_controls
                 .mut_map(|c| c.set_metadata(&self.meta).ignore_err());
-            self.media_controls
-                .mut_map(|c| c.set_volume(self.state.volume));
             self.player.request_position(); // because set_volume resets the position
 
             if show_popup {
@@ -457,7 +455,9 @@ impl App {
             PlayerResponse::PositionCallback { callback, .. } => {
                 self.process_position_callback(&callback);
             }
-            PlayerResponse::VolumeSet { .. } => {}
+            PlayerResponse::VolumeSet { volume } => {
+                self.media_controls.mut_map(|c| c.set_volume(volume));
+            }
             PlayerResponse::Exited => {
                 return false;
             }
