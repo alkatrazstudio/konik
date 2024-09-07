@@ -41,7 +41,7 @@ enum ListenType {
 struct AdditionalInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     tracknumber: Option<usize>,
-    listening_from: &'static str,
+    media_player: &'static str,
 }
 
 #[derive(Serialize)]
@@ -344,7 +344,7 @@ impl AdditionalInfo {
     fn new(number: Option<usize>) -> Self {
         return Self {
             tracknumber: number,
-            listening_from: project_info::title(),
+            media_player: project_info::title(),
         };
     }
 }
