@@ -4,7 +4,7 @@
 use std::{
     sync::{Arc, Mutex, MutexGuard},
     thread::JoinHandle,
-    time::{SystemTime, UNIX_EPOCH},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 use anyhow::{bail, Context, Result};
@@ -41,6 +41,8 @@ enum ListenType {
 struct AdditionalInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     tracknumber: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    duration: Option<u64>,
     media_player: &'static str,
 }
 
@@ -80,6 +82,7 @@ struct ListenItem {
     track: String,
     album: Option<String>,
     number: Option<usize>,
+    duration_secs: Option<u64>,
     timestamp: u64,
 }
 
@@ -126,6 +129,7 @@ impl ListenBrainz {
         album: &Option<String>,
         track: &str,
         number: Option<usize>,
+        duration: Duration,
     ) -> Result<()> {
         let release_name = album.clone();
 
@@ -135,7 +139,7 @@ impl ListenBrainz {
                 artist_name: artist.to_string(),
                 track_name: track.to_string(),
                 release_name,
-                additional_info: AdditionalInfo::new(number),
+                additional_info: AdditionalInfo::new(number, Some(duration.as_secs())),
             },
         };
 
@@ -162,6 +166,7 @@ impl ListenBrainz {
         album: &Option<String>,
         track: &str,
         number: Option<usize>,
+        duration: Duration,
     ) -> Result<()> {
         let start = SystemTime::now();
         let timestamp = start
@@ -175,6 +180,7 @@ impl ListenBrainz {
             album: release_name,
             track: track.to_string(),
             number,
+            duration_secs: Some(duration.as_secs()),
             timestamp,
         };
 
@@ -334,16 +340,17 @@ impl Payload {
                 artist_name: listen.artist.clone(),
                 track_name: listen.track.clone(),
                 release_name: listen.album.clone(),
-                additional_info: AdditionalInfo::new(listen.number),
+                additional_info: AdditionalInfo::new(listen.number, listen.duration_secs),
             },
         };
     }
 }
 
 impl AdditionalInfo {
-    fn new(number: Option<usize>) -> Self {
+    fn new(number: Option<usize>, duration_secs: Option<u64>) -> Self {
         return Self {
             tracknumber: number,
+            duration: duration_secs,
             media_player: project_info::title(),
         };
     }

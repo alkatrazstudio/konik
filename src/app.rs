@@ -356,7 +356,7 @@ impl App {
                     POS_CALLBACK_NOW_PLAYING => {
                         if let Some(listenbrainz) = &mut self.listenbrainz {
                             listenbrainz
-                                .playing_now(artist, &meta.album, title, meta.track)
+                                .playing_now(artist, &meta.album, title, meta.track, meta.duration)
                                 .context("ListenBrainz playing now call failed")
                                 .ignore_err();
                         }
@@ -378,7 +378,7 @@ impl App {
                         if self.last_seek_position.unwrap_or_default().is_zero() {
                             if let Some(listenbrainz) = &mut self.listenbrainz {
                                 listenbrainz
-                                    .submit(artist, &meta.album, title, meta.track)
+                                    .submit(artist, &meta.album, title, meta.track, meta.duration)
                                     .context("ListenBrainz submit failed")
                                     .ignore_err();
                             }
