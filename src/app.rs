@@ -21,7 +21,7 @@ use crate::{
 use anyhow::{Context, Result};
 use souvlaki::{MediaControlEvent, SeekDirection};
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     sync::{mpsc::Receiver, Arc, Mutex},
     thread::JoinHandle,
     time::Duration,
@@ -54,12 +54,12 @@ const POS_MIN_DURATION_TO_SCROBBLE: Duration = Duration::from_secs(30);
 const DEFAULT_SEEK_LENGTH: Duration = Duration::from_secs(5);
 
 impl App {
-    pub fn new_args(&self, args: &Args) {
-        self.play_paths(&args.paths);
+    pub fn new_args(&self, args: &Args, cur_dir: &Path) {
+        self.play_paths(&args.paths, cur_dir);
     }
 
-    fn play_paths(&self, paths: &[String]) {
-        let (tracks, cue_factory) = playlist_man::collect_tracks(paths);
+    fn play_paths(&self, paths: &[String], cur_dir: &Path) {
+        let (tracks, cue_factory) = playlist_man::collect_tracks(paths, cur_dir);
         if tracks.is_empty() {
             return;
         }
@@ -74,7 +74,7 @@ impl App {
         self.user_action_quit();
     }
 
-    fn init_playlist(&self, paths: &[String]) {
+    fn init_playlist(&self, paths: &[String], cur_dir: &Path) {
         let tracks;
         let auto_play;
         let playlist_index;
@@ -96,7 +96,7 @@ impl App {
             cue_factory = None;
         } else {
             (tracks, cue_factory) = {
-                let (tracks, cue_factory) = playlist_man::collect_tracks(paths);
+                let (tracks, cue_factory) = playlist_man::collect_tracks(paths, cur_dir);
                 (tracks, Some(cue_factory))
             };
             auto_play = true;
@@ -278,7 +278,7 @@ impl App {
     }
 
     fn user_action_open_uri(&self, uri_str: String) {
-        self.play_paths(&[uri_str]);
+        self.play_paths(&[uri_str], &PathBuf::new());
     }
 
     fn process_hotkey(&mut self, action: HotKeyAction) {
@@ -515,7 +515,7 @@ impl AppHandle {
     }
 }
 
-pub fn start(cli_args: &Args) -> Result<AppHandle> {
+pub fn start(cli_args: &Args, cur_dir: &Path) -> Result<AppHandle> {
     let listenbrainz = ListenBrainz::useable_or_none();
     let lastfm = LastFM::useable_or_none();
     let position_callbacks = if listenbrainz.is_some() || lastfm.is_some() {
@@ -550,7 +550,7 @@ pub fn start(cli_args: &Args) -> Result<AppHandle> {
 
     set_tray_menu(&app);
     start_hotkey_thread(&app).context("cannot start hotkey thread")?;
-    app.lock().unwrap().init_playlist(&cli_args.paths);
+    app.lock().unwrap().init_playlist(&cli_args.paths, cur_dir);
     setup_media_controls(&app).context("cannot setup media controls")?;
 
     let player_thread = start_player_response_thread(&app, dec_rx);

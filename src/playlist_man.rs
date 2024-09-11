@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // 🄯 2023, Alexey Parfenov <zxed@alkatrazstudio.net>
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Result};
 use path_absolutize::Absolutize;
@@ -45,13 +45,14 @@ fn uri_to_str(uri_str: &String) -> PathBuf {
     return uri_str.into();
 }
 
-pub fn collect_tracks(paths: &[String]) -> (Vec<Track>, CueFactory) {
+pub fn collect_tracks(paths: &[String], cur_dir: &Path) -> (Vec<Track>, CueFactory) {
     let mut cue_factory = CueFactory::new();
 
     #[allow(clippy::needless_collect)] // not actually "needless"
     let tracks: Vec<Track> = paths
         .iter()
         .map(uri_to_str)
+        .map(|path| cur_dir.join(path))
         .flat_map(WalkDir::new)
         .filter_map(|entry| entry.to_option())
         .filter_map(|entry| {

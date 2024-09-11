@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // 🄯 2023, Alexey Parfenov <zxed@alkatrazstudio.net>
 
+use std::{env::current_dir, path::PathBuf};
+
 use anyhow::{Context, Result};
 use clap::Parser;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     app,
@@ -16,6 +19,12 @@ use crate::{
 };
 
 const SINGLETON_ID: &str = "bfde662d-2ed2-4672-b3bb-ca27b6b97002";
+
+#[derive(Serialize, Deserialize)]
+struct SingletonPayload {
+    cli_args: Args,
+    current_dir: String,
+}
 
 pub fn main() -> Result<()> {
     let cli_args = Args::parse();
@@ -41,16 +50,26 @@ pub fn main() -> Result<()> {
         return Ok(());
     }
 
-    let singleton_data = cli_args.clone();
+    let singleton_payload = SingletonPayload {
+        cli_args: cli_args.clone(),
+        current_dir: current_dir()
+            .unwrap_or_default()
+            .to_str()
+            .unwrap_or_default()
+            .to_string(),
+    };
     let singleton_name = format!("{}-{SINGLETON_ID}", project_info::name());
-    let single = Singleton::new(&singleton_name, move || Some(singleton_data))?;
+    let single = Singleton::new(&singleton_name, move || Some(singleton_payload))?;
     if let Some(single) = single {
         println_with_date("starting up...");
-        let app_handle = app::start(&cli_args)?;
+        let cur_dir = current_dir().unwrap_or_default();
+        let app_handle = app::start(&cli_args, &cur_dir)?;
 
         let app = app_handle.app.clone();
-        single.listen(move |args| {
-            app.lock().unwrap().new_args(&args);
+        single.listen(move |payload| {
+            app.lock()
+                .unwrap()
+                .new_args(&payload.cli_args, &PathBuf::from(&payload.current_dir));
         })?;
 
         let app = app_handle.app.clone();
