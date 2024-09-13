@@ -7,7 +7,7 @@ use anyhow::{bail, Context, Result};
 use lofty::{
     file::{AudioFile, TaggedFileExt},
     probe::Probe,
-    tag::{Accessor, Tag},
+    tag::{Accessor, ItemKey, ItemValue, Tag},
 };
 use symphonia::core::{
     audio::{AudioBufferRef, SampleBuffer},
@@ -214,15 +214,32 @@ impl SymphoniaStream {
         return Some(meta);
     }
 
+    fn valid_lofty_tag_string(tag: &Tag, key: &ItemKey) -> Option<String> {
+        if let Some(tag_item) = tag.get(key) {
+            return match tag_item.value() {
+                ItemValue::Text(s) => {
+                    for c in s.chars() {
+                        if c.is_ascii_control() {
+                            return None;
+                        }
+                    }
+                    return Some(s.clone());
+                }
+                _ => None,
+            };
+        }
+        return None;
+    }
+
     fn fill_lofty_tag(tag: &Tag, info: &mut TrackMeta) {
         if info.artist.is_none() {
-            info.artist = tag.artist().map(|s| s.to_string());
+            info.artist = Self::valid_lofty_tag_string(tag, &ItemKey::TrackArtist);
         }
         if info.album.is_none() {
-            info.album = tag.album().map(|s| s.to_string());
+            info.album = Self::valid_lofty_tag_string(tag, &ItemKey::AlbumTitle);
         }
         if info.title.is_none() {
-            info.title = tag.title().map(|s| s.to_string());
+            info.title = Self::valid_lofty_tag_string(tag, &ItemKey::TrackTitle);
         }
         if info.track.is_none() {
             info.track = tag.track().map(|x| x as usize);
