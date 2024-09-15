@@ -61,4 +61,4 @@ termimad = "=0.30.0"
 codegen-units = 1
 lto = true
 panic = "abort"
-strip = true
+strip = "symbols"
