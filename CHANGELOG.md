@@ -1,6 +1,14 @@
 # Konik - CHANGELOG
 
 
+## v0.3.0 (September 15, 2024)
+
+- Added: submit track duration to ListenBrainz
+- Fixed: showing unreadable/broken tags
+- Fixed: passing relative paths to a running instance
+- Fixed: using wrong ListenBrainz field for the music player name
+
+
 ## v0.2.0 (May 25, 2024)
 
 - Fixed: sending invalid payload to ListenBrainz
