@@ -47,6 +47,7 @@ mod symphonia_stream;
 mod sys_vol;
 mod thread_util;
 mod tray_icon;
+mod http;
 
 fn main() -> anyhow::Result<()> {
     return entry::main();

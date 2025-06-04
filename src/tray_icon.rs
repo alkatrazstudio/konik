@@ -4,8 +4,11 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use ksni::{self, menu::StandardItem, Handle, Icon, MenuItem, TrayService};
+use ksni::blocking::{Handle, TrayMethods};
+use ksni::{Icon, MenuItem, Tray};
+use ksni::menu::StandardItem;
 use png::Decoder;
+use crate::project_info;
 
 #[derive(Copy, Clone)]
 pub enum TrayIconImageType {
@@ -87,9 +90,7 @@ impl TrayIcon {
             image_type: TrayIconImageType::Stop,
             menu_items: vec![],
         };
-        let service = TrayService::new(data);
-        let handle = service.handle();
-        service.spawn();
+        let handle = data.spawn()?;
 
         return Ok(Self {
             handle,
@@ -165,7 +166,11 @@ impl TrayIcon {
     }
 }
 
-impl ksni::Tray for TrayIconData {
+impl Tray for TrayIconData {
+    fn id(&self) -> String {
+        return project_info::name().to_string();
+    }
+
     fn title(&self) -> String {
         return self.tooltip.clone();
     }

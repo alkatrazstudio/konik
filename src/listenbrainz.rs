@@ -10,12 +10,7 @@ use std::{
 use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    cli,
-    err_util::{eprintln_with_date, IgnoreErr, LogErr},
-    project_file::{ProjectFileJson, ProjectFileString},
-    project_info, thread_util,
-};
+use crate::{cli, err_util::{eprintln_with_date, IgnoreErr, LogErr}, http, project_file::{ProjectFileJson, ProjectFileString}, project_info, thread_util};
 
 const SUBMIT_ENDPOINT: &str = "https://api.listenbrainz.org/1/submit-listens";
 const VALIDATE_ENDPOINT: &str = "https://api.listenbrainz.org/1/validate-token";
@@ -239,37 +234,40 @@ impl ListenBrainz {
         }
     }
 
+    fn authorization_header_from_token(token: &str) -> String {
+        let header = format!("Token {}", &token);
+        return header;
+    }
+
     fn send<S, E>(&mut self, request: Request, on_succ: S, on_err: E) -> Result<()>
     where
         S: FnOnce(String) + Send + 'static,
         E: FnOnce(String) + Send + 'static,
     {
+        let json = serde_json::to_string(&request).context("cannot serialize payload")?;
+        self.wait_for_api_thread();
         if let Some(token) = &self.token {
-            let auth = format!("Token {}", &token);
-            let json = serde_json::to_string(&request).context("cannot serialize payload")?;
-
-            self.wait_for_api_thread();
+            let auth = Self::authorization_header_from_token(token);
             let handle = thread_util::thread("ListenBrainz submit API call", move || {
-                let result = ureq::post(SUBMIT_ENDPOINT)
-                    .set("Authorization", &auth)
-                    .set("Content-Type", "application/json")
-                    .send_string(&json);
-
-                match result {
-                    Ok(resp) => {
-                        let json = resp.into_string().unwrap_or_default();
-                        on_succ(json.trim().to_string());
-                    }
-                    Err(e) => {
-                        let json = match e.into_response() {
-                            Some(resp) => resp.into_string().unwrap_or_default(),
-                            None => String::new(),
-                        };
-                        on_err(json.trim().to_string());
+                match http::post(SUBMIT_ENDPOINT, "application/json", &json, &auth) {
+                    Ok(response) => {
+                        let json = response.body.trim().to_string();
+                        if response.is_success {
+                            on_succ(json);
+                            return;
+                        }
                         eprintln_with_date(format!(
                             "cannot perform ListenBrainz API call: {:?}",
                             &request.listen_type
                         ));
+                        on_err(json);
+                    }
+                    Err(e) => {
+                        eprintln_with_date(format!(
+                            "cannot perform ListenBrainz API call: {:?}. {e}",
+                            &request.listen_type
+                        ));
+                        on_err("".to_string());
                     }
                 }
             });
@@ -281,30 +279,17 @@ impl ListenBrainz {
     }
 
     fn validate_token(token: &str) -> Result<String> {
-        let auth = format!("Token {}", &token);
-        let resp = ureq::get(VALIDATE_ENDPOINT)
-            .set("Authorization", &auth)
-            .set("Content-Type", "application/json")
-            .call();
-        let json = match resp {
-            Ok(resp) => resp
-                .into_string()
-                .context("cannot read HTTP response as string")?,
-            Err(e) => match e {
-                ureq::Error::Status(e, resp) => {
-                    eprintln_with_date(format!("HTTP Code: {e}"));
-                    resp.into_string()
-                        .context("cannot read HTTP response as string")?
-                }
-                ureq::Error::Transport(e) => bail!(e),
-            },
-        };
+        let auth = Self::authorization_header_from_token(token);
+        let response = http::get(VALIDATE_ENDPOINT, &auth)?;
+        if !response.is_success {
+            eprintln_with_date(format!("HTTP Code: {}", response.status_code));
+        }
         let msg: TokenValidationResponse =
-            serde_json::from_str(&json).context("cannot parse token response")?;
+            serde_json::from_str(&response.body).context("cannot parse token response")?;
         if msg.valid {
             return msg
                 .user_name
-                .context("user_name field is missing fron the response");
+                .context("user_name field is missing in the response");
         }
         bail!("[{}] {}", msg.code, msg.message);
     }

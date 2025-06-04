@@ -11,12 +11,7 @@ use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::{
-    cli,
-    err_util::{eprintln_with_date, IgnoreErr, LogErr},
-    project_file::{ProjectFileJson, ProjectFileString},
-    project_info, thread_util,
-};
+use crate::{cli, err_util::{eprintln_with_date, IgnoreErr, LogErr}, http, project_file::{ProjectFileJson, ProjectFileString}, thread_util};
 
 include!(concat!(env!("OUT_DIR"), "/lastfm_keys.rs"));
 
@@ -332,41 +327,18 @@ impl LastFM {
     where
         for<'de> T: Deserialize<'de>,
     {
-        let user_agent = format!("{}/{}", project_info::title(), project_info::version());
-
-        let result = ureq::post(url)
-            .set("User-Agent", &user_agent)
-            .set("Content-Type", "application/json")
-            .set("Content-Length", "0")
-            .call();
-
-        let result = match result {
-            Ok(result) => result,
-            Err(e) => match e {
-                ureq::Error::Status(status, response) => {
-                    let json = response
-                        .into_string()
-                        .context("cannot read error status HTTP response as string")?;
-                    let err: ErrorResponse = serde_json::from_str(&json)
-                        .context("cannot parse error status HTTP response ")?;
-                    bail!(
-                        "{}, Error Code = {}, HTTP status = {}",
-                        &err.message,
-                        err.error,
-                        status
-                    );
-                }
-                ureq::Error::Transport(e) => {
-                    let msg = e.message().unwrap_or_default();
-                    let kind = e.kind();
-                    bail!("HTTP error [{kind}]: {msg}")
-                }
-            },
-        };
-        let json = result
-            .into_string()
-            .context("cannot get HTTP response as string")?;
-        let result = serde_json::from_str(&json).context("cannot parse HTTP response")?;
+        let response = http::post(url, "application/json", "", "")?;
+        if !response.is_success {
+            let err: ErrorResponse = serde_json::from_str(&response.body)
+                .context("cannot parse error status HTTP response")?;
+            bail!(
+                "{}, Error Code = {}, HTTP status = {}",
+                &err.message,
+                err.error,
+                response.status_code
+            );
+        }
+        let result = serde_json::from_str(&response.body).context("cannot parse HTTP response")?;
         return Ok(result);
     }
 

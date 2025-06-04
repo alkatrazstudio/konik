@@ -3,14 +3,14 @@ name = "konik"
 version = "0.3.0"
 authors = ["Alexey Parfenov <zxed@alkatrazstudio.net>"]
 categories = ["multimedia::audio"]
-edition = "2021"
+edition = "2024"
 homepage = "https://github.com/alkatrazstudio/konik"
 keywords = ["audio", "player", "music", "hotkeys", "flac", "ogg", "mp3", "scrobble", "listenbrainz", "lastfm"]
 license = "GPL-3.0-only"
 publish = false
 readme = "README.md"
 repository = "https://github.com/alkatrazstudio/konik"
-rust-version = "1.81.0"
+rust-version = "1.87.0"
 description = "Music player controlled by global hotkeys"
 
 [package.metadata]
@@ -21,41 +21,41 @@ title = "Konik"
 [dependencies]
 alphanumeric-sort = "=1.5.3"
 alsa = "=0.9.1"
-anyhow = "=1.0.86"
-chrono = "=0.4.38"
-clap = { version = "=4.5.17", features = ["derive"] }
+anyhow = "=1.0.98"
+chrono = "=0.4.41"
+clap = { version = "=4.5.39", features = ["derive"] }
 cpal = "=0.15.3"
 cuna = "=0.7.0"
 dbus = "=0.9.7"
-directories = "=5.0.1"
-fd-lock = "=4.0.2"
-global-hotkey = "=0.6.0"
+directories = "=6.0.0"
+fd-lock = "=4.0.4"
+global-hotkey = "=0.7.0"
 html-escape = "=0.2.13"
-interprocess = { version = "=2.2.1", default-features = false }
-ksni = "=0.2.2"
-lofty = "=0.21.1"
+interprocess = { version = "=2.2.3", default-features = false }
+ksni = { version = "=0.3.1", features = ["blocking"] }
+lofty = "=0.22.4"
 md5 = "=0.7.0"
-notify-rust = { version = "=4.11.1", default-features = false, features = ["d"] }
+notify-rust = { version = "=4.11.7", default-features = false, features = ["d"] }
 num-traits = "=0.2.19"
 path-absolutize = "=3.1.1"
-png = "=0.17.13"
-regex = "=1.10.6"
-rpassword = "=7.3.1"
-serde = "=1.0.209"
-serde_json = "=1.0.128"
-signal-hook = "=0.3.17"
-souvlaki = "=0.7.3"
+png = "=0.17.16"
+regex = "=1.11.1"
+rpassword = "=7.4.0"
+serde = "=1.0.219"
+serde_json = "=1.0.140"
+signal-hook = "=0.3.18"
+souvlaki = "=0.8.2"
 symphonia = { version = "=0.5.4", default-features = false, features = ["flac", "mp3", "ogg", "vorbis"] }
-ureq = { version = "=2.10.1", default-features = false, features = ["native-certs", "tls"] }
-url = "=2.5.2"
+ureq = { version = "=3.0.11", default-features = false, features = ["native-tls"] }
+url = "=2.5.4"
 walkdir = "=2.5.0"
 
 [build-dependencies]
-anyhow = "=1.0.86"
-built = { version = "=0.7.4", features = ["chrono", "git2"] }
-cargo_metadata = "=0.18.1"
-handlebars = "=6.1.0"
-termimad = "=0.30.0"
+anyhow = "=1.0.98"
+built = { version = "=0.8.0", features = ["chrono", "git2"] }
+cargo_metadata = "=0.20.0"
+handlebars = "=6.3.2"
+termimad = "=0.33.0"
 
 [profile.release]
 codegen-units = 1
