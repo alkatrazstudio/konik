@@ -3,7 +3,7 @@
 
 use std::fmt::{Debug, Display};
 
-use anyhow::{anyhow, bail, Error, Result};
+use anyhow::{Error, Result, anyhow, bail};
 
 fn get_now_str() -> String {
     let now = chrono::Local::now();

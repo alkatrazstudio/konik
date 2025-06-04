@@ -2,7 +2,7 @@
 // 🄯 2023, Alexey Parfenov <zxed@alkatrazstudio.net>
 
 use crate::{err_util::LogErr, stream_base::Stream, symphonia_stream::SymphoniaStream};
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 
 fn open_stream<T: Stream + 'static>(path: &str) -> Option<Box<dyn Stream>> {
     if !T::is_path_supported(path) {

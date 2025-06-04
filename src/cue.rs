@@ -10,12 +10,12 @@ use std::{
     time::Duration,
 };
 
-use anyhow::{bail, Context, Result};
-use cuna::{track::Track, Cuna};
+use anyhow::{Context, Result, bail};
+use cuna::{Cuna, track::Track};
 use regex::Regex;
 
 use crate::{
-    err_util::{eprintln_with_date, LogErr},
+    err_util::{LogErr, eprintln_with_date},
     stream_base::TrackMeta,
 };
 
@@ -224,7 +224,7 @@ impl CueSheet {
             return if let Ok(num) = comment.parse() {
                 Some(num)
             } else {
-                eprintln_with_date("cannot parse \"{tag}\" as number");
+                eprintln_with_date(format!("cannot parse \"{tag}\" as number"));
                 None
             };
         }

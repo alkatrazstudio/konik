@@ -3,19 +3,19 @@
 
 use std::path::{Path, PathBuf};
 use std::sync::{
-    mpsc::{channel, Receiver, Sender},
     Arc, Mutex,
+    mpsc::{Receiver, Sender, channel},
 };
 use std::thread::JoinHandle;
 use std::time::Duration;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use cpal::traits::StreamTrait;
 
 use crate::{
     cue::CueFactory,
     decoder::{Decoder, DecoderReadResult},
-    err_util::{eprintln_with_date, IgnoreErr, LogErr},
+    err_util::{IgnoreErr, LogErr, eprintln_with_date},
     stream_base::{Track, TrackMeta},
     thread_util,
 };
@@ -567,7 +567,7 @@ impl PlayerThread {
                     return Ok(false);
                 }
             }
-        };
+        }
         return Ok(true);
     }
 

@@ -4,10 +4,10 @@
 use std::{collections::HashMap, ffi::CString};
 
 use alsa::{
-    mixer::{Selem, SelemChannelId, SelemId},
     Mixer,
+    mixer::{Selem, SelemChannelId, SelemId},
 };
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::err_util::IgnoreErr;
 

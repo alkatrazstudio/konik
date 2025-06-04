@@ -3,7 +3,7 @@
 
 use std::path::{Path, PathBuf};
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use path_absolutize::Absolutize;
 use url::Url;
 use walkdir::WalkDir;

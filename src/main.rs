@@ -7,14 +7,15 @@
     clippy::needless_return,
 
     // pedantic
+    clippy::cast_lossless,
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_precision_loss,
     clippy::doc_markdown,
     clippy::module_name_repetitions,
     clippy::needless_raw_string_hashes,
     clippy::redundant_closure_for_method_calls,
-    clippy::cast_possible_truncation,
-    clippy::cast_precision_loss,
-    clippy::cast_lossless,
-    clippy::cast_possible_wrap,
+    clippy::ref_option,
 
     // nursery
     clippy::option_if_let_else,
@@ -30,6 +31,7 @@ mod decoder;
 mod entry;
 mod err_util;
 mod hotkeys;
+mod http;
 mod lastfm;
 mod listenbrainz;
 mod media_controls;
@@ -47,7 +49,6 @@ mod symphonia_stream;
 mod sys_vol;
 mod thread_util;
 mod tray_icon;
-mod http;
 
 fn main() -> anyhow::Result<()> {
     return entry::main();

@@ -7,10 +7,16 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 
-use crate::{cli, err_util::{eprintln_with_date, IgnoreErr, LogErr}, http, project_file::{ProjectFileJson, ProjectFileString}, project_info, thread_util};
+use crate::{
+    cli,
+    err_util::{IgnoreErr, LogErr, eprintln_with_date},
+    http,
+    project_file::{ProjectFileJson, ProjectFileString},
+    project_info, thread_util,
+};
 
 const SUBMIT_ENDPOINT: &str = "https://api.listenbrainz.org/1/submit-listens";
 const VALIDATE_ENDPOINT: &str = "https://api.listenbrainz.org/1/validate-token";
@@ -184,11 +190,7 @@ impl ListenBrainz {
         let was_empty = items.is_empty();
         items.push(listen);
         let items_len = items.len();
-        let first_item_index = if items_len >= MAX_IMPORT {
-            items_len - MAX_IMPORT
-        } else {
-            0
-        };
+        let first_item_index = items_len.saturating_sub(MAX_IMPORT);
         let batch = &items[first_item_index..items_len];
         let timestamps: Vec<u64> = batch.iter().map(|i| i.timestamp).collect();
 
@@ -267,7 +269,7 @@ impl ListenBrainz {
                             "cannot perform ListenBrainz API call: {:?}. {e}",
                             &request.listen_type
                         ));
-                        on_err("".to_string());
+                        on_err(String::new());
                     }
                 }
             });

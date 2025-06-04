@@ -7,7 +7,7 @@
     clippy::needless_return
 )]
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use cargo_metadata::{MetadataCommand, Package};
 use handlebars::Handlebars;
 use std::{collections::HashMap, env, fs, path::Path};

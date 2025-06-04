@@ -4,9 +4,9 @@
 use anyhow::{Context, Result};
 use fd_lock::RwLock;
 use interprocess::local_socket::{
-    traits::{ListenerExt, Stream as StreamTrait},
     GenericFilePath, GenericNamespaced, ListenerOptions, Name, NameType, Stream, ToFsName,
     ToNsName,
+    traits::{ListenerExt, Stream as StreamTrait},
 };
 use serde::{Deserialize, Serialize};
 use std::{
@@ -87,11 +87,11 @@ where
             .create(true)
             .truncate(true)
             .open(&filename)
-            .with_context(|| format!("cannot open {filename:?}"))?;
+            .with_context(|| format!("cannot open {}", filename.display()))?;
         let mut file = RwLock::new(file);
-        let mut write_file = file
-            .write()
-            .with_context(|| format!("cannot open lock file for writing: {filename:?}"))?;
+        let mut write_file = file.write().with_context(|| {
+            format!("cannot open lock file for writing: {}", filename.display())
+        })?;
         write!(write_file, "{}", &name)?;
         drop(write_file);
         return Ok((file, filename));
@@ -135,7 +135,7 @@ where
         if let Some(flock) = self.flock.take() {
             drop(flock);
             fs::remove_file(&self.flock_filename)
-                .with_context(|| format!("cannot remove file: {:?}", self.flock_filename))
+                .with_context(|| format!("cannot remove file: {}", self.flock_filename.display()))
                 .ignore_err();
         }
     }

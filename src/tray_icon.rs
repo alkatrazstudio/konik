@@ -3,12 +3,12 @@
 
 use std::sync::Arc;
 
+use crate::project_info;
 use anyhow::{Context, Result};
 use ksni::blocking::{Handle, TrayMethods};
-use ksni::{Icon, MenuItem, Tray};
 use ksni::menu::StandardItem;
+use ksni::{Icon, MenuItem, Tray};
 use png::Decoder;
-use crate::project_info;
 
 #[derive(Copy, Clone)]
 pub enum TrayIconImageType {

@@ -4,7 +4,7 @@
 use crate::{
     app_state::AppState,
     cli::Args,
-    err_util::{eprintln_with_date, println_with_date, IgnoreErr, LogErr, OptionAnd},
+    err_util::{IgnoreErr, LogErr, OptionAnd, eprintln_with_date, println_with_date},
     hotkeys::{HotKeyAction, HotKeys},
     lastfm::LastFM,
     listenbrainz::ListenBrainz,
@@ -22,7 +22,7 @@ use anyhow::{Context, Result};
 use souvlaki::{MediaControlEvent, SeekDirection};
 use std::{
     path::{Path, PathBuf},
-    sync::{mpsc::Receiver, Arc, Mutex},
+    sync::{Arc, Mutex, mpsc::Receiver},
     thread::JoinHandle,
     time::Duration,
 };
@@ -234,7 +234,7 @@ impl App {
         match SysVol::new() {
             Ok(sys_vol) => self.process_sys_vol_result(sys_vol.modify_with_step(step)),
             Err(e) => e.context("cannot create system volume controller").log(),
-        };
+        }
     }
 
     fn user_action_sysvol_down(&self) {
@@ -578,17 +578,19 @@ fn start_player_response_thread(
     dec_rx: Receiver<PlayerResponse>,
 ) -> JoinHandle<()> {
     let app_arc = app_arc.clone();
-    let t = thread_util::thread("player client", move || loop {
-        let resp = dec_rx.recv();
-        match resp {
-            Err(e) => {
-                e.log();
-                return;
-            }
-            Ok(resp) => {
-                let mut app = app_arc.lock().unwrap();
-                if !app.process_player_response(resp) {
+    let t = thread_util::thread("player client", move || {
+        loop {
+            let resp = dec_rx.recv();
+            match resp {
+                Err(e) => {
+                    e.log();
                     return;
+                }
+                Ok(resp) => {
+                    let mut app = app_arc.lock().unwrap();
+                    if !app.process_player_response(resp) {
+                        return;
+                    }
                 }
             }
         }

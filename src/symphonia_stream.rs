@@ -3,7 +3,7 @@
 
 use std::{collections::VecDeque, fs::File, path::Path, time::Duration};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use lofty::{
     file::{AudioFile, TaggedFileExt},
     probe::Probe,
@@ -11,7 +11,7 @@ use lofty::{
 };
 use symphonia::core::{
     audio::{AudioBufferRef, SampleBuffer},
-    codecs::{Decoder, DecoderOptions, CODEC_TYPE_NULL},
+    codecs::{CODEC_TYPE_NULL, Decoder, DecoderOptions},
     formats::{FormatOptions, SeekMode, SeekTo, Track},
     io::{MediaSourceStream, MediaSourceStreamOptions},
     meta::MetadataOptions,
@@ -20,7 +20,7 @@ use symphonia::core::{
 };
 
 use crate::{
-    err_util::{eprintln_with_date, LogErr},
+    err_util::{LogErr, eprintln_with_date},
     stream_base::{Stream, StreamHelper, StreamPacketMeta, TrackMeta},
 };
 
@@ -132,7 +132,7 @@ impl Stream for SymphoniaStream {
                     eprintln_with_date(format!("decode error: {e}"));
                 }
                 Err(e) => bail!(e),
-            };
+            }
         }
     }
 
@@ -285,7 +285,7 @@ impl SymphoniaStream {
                                 Self::fill_lofty_tag(tag, &mut info);
                             }
                         }
-                    };
+                    }
                     return Some(info);
                 }
                 Err(e) => {

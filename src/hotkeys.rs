@@ -10,8 +10,8 @@ use std::{
 
 use anyhow::Result;
 use global_hotkey::{
-    hotkey::{Code, HotKey},
     GlobalHotKeyEvent, GlobalHotKeyManager, HotKeyState,
+    hotkey::{Code, HotKey},
 };
 
 use crate::{err_util::IgnoreErr, thread_util};

@@ -7,11 +7,17 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::{cli, err_util::{eprintln_with_date, IgnoreErr, LogErr}, http, project_file::{ProjectFileJson, ProjectFileString}, thread_util};
+use crate::{
+    cli,
+    err_util::{IgnoreErr, LogErr, eprintln_with_date},
+    http,
+    project_file::{ProjectFileJson, ProjectFileString},
+    thread_util,
+};
 
 include!(concat!(env!("OUT_DIR"), "/lastfm_keys.rs"));
 
@@ -216,11 +222,7 @@ impl LastFM {
         let was_empty = items.is_empty();
         items.push(item);
         let items_len = items.len();
-        let first_item_index = if items_len >= MAX_SCROBBLES {
-            items_len - MAX_SCROBBLES
-        } else {
-            0
-        };
+        let first_item_index = items_len.saturating_sub(MAX_SCROBBLES);
         let batch = &items[first_item_index..items_len];
         let mut timestamps = Vec::new();
         for (i, item) in batch.iter().enumerate() {
@@ -346,7 +348,10 @@ impl LastFM {
         let lastfm = Self::new_or_none().context("Last.fm support was not enabled")?;
         if lastfm.session_key.is_some() {
             let session_key = Self::session_key_file();
-            bail!("there is already a stored session key at {:?}. Remove this file to authenticate again.", session_key.filename()?);
+            bail!(
+                "there is already a stored session key at {:?}. Remove this file to authenticate again.",
+                session_key.filename()?
+            );
         }
 
         let username = cli::read_line("Last.fm username: ").context("cannot read username")?;

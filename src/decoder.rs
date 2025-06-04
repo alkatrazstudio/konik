@@ -7,10 +7,10 @@ use std::{
     time::Duration,
 };
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use cpal::{
-    traits::{DeviceTrait, HostTrait},
     Sample, SizedSample,
+    traits::{DeviceTrait, HostTrait},
 };
 use num_traits::ToPrimitive;
 use symphonia::core::{
@@ -20,7 +20,7 @@ use symphonia::core::{
 
 use crate::{
     cue::{CueFactory, CueSheet},
-    err_util::{eprintln_with_date, IgnoreErr, LogErr},
+    err_util::{IgnoreErr, LogErr, eprintln_with_date},
     stream_base::{Stream, StreamPacketMeta, Track, TrackMeta},
     stream_man,
 };

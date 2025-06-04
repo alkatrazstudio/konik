@@ -3,7 +3,7 @@
 
 use std::time::Duration;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use dbus::blocking::Connection;
 use url::Url;
 
