@@ -7,7 +7,7 @@ use crate::project_info;
 use anyhow::{Context, Result};
 use ksni::blocking::{Handle, TrayMethods};
 use ksni::menu::StandardItem;
-use ksni::{Icon, MenuItem, Tray};
+use ksni::{Icon, MenuItem, ToolTip, Tray};
 use png::Decoder;
 
 #[derive(Copy, Clone)]
@@ -172,7 +172,7 @@ impl Tray for TrayIconData {
     }
 
     fn title(&self) -> String {
-        return self.tooltip.clone();
+        return project_info::title().to_string();
     }
 
     fn icon_pixmap(&self) -> Vec<Icon> {
@@ -183,6 +183,15 @@ impl Tray for TrayIconData {
             TrayIconImageType::Pause => self.pause_image.clone(),
         };
         return vec![image];
+    }
+
+    fn tool_tip(&self) -> ToolTip {
+        return ToolTip {
+            icon_name: self.icon_name(),
+            icon_pixmap: self.icon_pixmap(),
+            title: self.tooltip.clone(),
+            description: String::new(),
+        };
     }
 
     fn menu(&self) -> Vec<MenuItem<Self>> {
