@@ -184,17 +184,21 @@ impl CueSheet {
 
     fn opt_str(s: &[String]) -> Option<String> {
         if let Some(s) = s.first() {
-            return Some(s.trim().to_string());
+            let s = s.trim();
+            if s.is_empty() {
+                return None;
+            }
+            return Some(s.to_string());
         }
         return None;
     }
 
     fn opt_str2(s1: &[String], s2: &[String]) -> Option<String> {
-        if let Some(s) = s1.first() {
-            return Some(s.trim().to_string());
+        if let Some(s) = Self::opt_str(s1) {
+            return Some(s);
         }
-        if let Some(s) = s2.first() {
-            return Some(s.trim().to_string());
+        if let Some(s) = Self::opt_str(s2) {
+            return Some(s);
         }
         return None;
     }

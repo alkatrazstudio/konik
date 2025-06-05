@@ -217,13 +217,17 @@ impl SymphoniaStream {
     fn valid_lofty_tag_string(tag: &Tag, key: &ItemKey) -> Option<String> {
         if let Some(tag_item) = tag.get(key) {
             return match tag_item.value() {
-                ItemValue::Text(s) => {
-                    for c in s.chars() {
+                ItemValue::Text(tag_value) => {
+                    for c in tag_value.chars() {
                         if c.is_ascii_control() {
                             return None;
                         }
                     }
-                    return Some(s.clone());
+                    let tag_value = tag_value.trim().to_string();
+                    if tag_value.is_empty() {
+                        return None;
+                    }
+                    return Some(tag_value);
                 }
                 _ => None,
             };
