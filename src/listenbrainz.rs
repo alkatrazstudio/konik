@@ -77,6 +77,13 @@ struct TokenValidationResponse {
     user_name: Option<String>,
 }
 
+#[derive(Deserialize)]
+struct RejectResponse {
+    code: u16,
+    error: String,
+    listened_at: u64,
+}
+
 #[derive(Serialize, Deserialize)]
 struct ListenItem {
     artist: String,
@@ -214,9 +221,31 @@ impl ListenBrainz {
                 }
             },
             move |json| {
-                eprintln_with_date(json);
-                let items = items_arc.lock().unwrap();
-                Self::save_not_submitted_guarded(&items);
+                eprintln_with_date(&json);
+                let mut items = items_arc.lock().unwrap();
+                let mut need_save = true;
+                if let Ok(reject) = serde_json::from_str::<RejectResponse>(&json) {
+                    if let Some(pos) = items.iter().position(|i| i.timestamp == reject.listened_at)
+                    {
+                        let item = &items[pos];
+                        if item.timestamp == timestamp {
+                            need_save = false; // we are removing the current listen, which is not in the file
+                        }
+                        eprintln_with_date(format!(
+                            "Removing {}/{}/{} from the ListenBrainz not submitted tracks ({}: {})",
+                            &item.artist,
+                            &item.album.clone().unwrap_or_default(),
+                            &item.track,
+                            reject.code,
+                            reject.error
+                        ));
+                        items.remove(pos);
+                    }
+                }
+                if need_save {
+                    Self::save_not_submitted_guarded(&items);
+                }
+                drop(items);
             },
         )
         .context("cannot perform ListenBrainz import API call")?;
