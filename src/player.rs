@@ -259,30 +259,27 @@ impl PlayerThread {
         cur_index: usize,
         wrap: bool,
         emit_ended: bool,
-    ) -> Result<usize> {
+    ) -> Option<usize> {
         if cur_index < self.playlist.len() - 1 {
-            return Ok(cur_index + 1);
+            return Some(cur_index + 1);
         }
         if wrap {
-            return Ok(0);
+            return Some(0);
         }
-
         if emit_ended {
             self.tx.send(PlayerResponse::PlaylistEnded).unwrap();
         }
-        bail!("playlist end reached");
+        return None;
     }
 
-    fn fetch_prev_playlist_index(&self, cur_index: usize, wrap: bool) -> Result<usize> {
+    fn fetch_prev_playlist_index(&self, cur_index: usize, wrap: bool) -> Option<usize> {
         if cur_index > 0 {
-            return Ok(cur_index - 1);
+            return Some(cur_index - 1);
         }
-
         if wrap {
-            return Ok(self.playlist.len() - 1);
+            return Some(self.playlist.len() - 1);
         }
-
-        bail!("playlist start reached");
+        return None;
     }
 
     fn fetch_first_playlist_index_in_dir(
@@ -291,121 +288,163 @@ impl PlayerThread {
         stop_index: usize,
         wrap: bool,
         files_left: &mut usize,
-    ) -> Result<usize> {
+    ) -> Option<usize> {
         let mut cur_dir = self.playlist_index_dir(cur_index);
-        let mut index = self.fetch_prev_playlist_index(cur_index, wrap)?;
-        if index != 0 && index != stop_index && self.playlist_index_dir(index) != cur_dir {
-            cur_dir = self.playlist_index_dir(index);
+        if let Some(mut index) = self.fetch_prev_playlist_index(cur_index, wrap) {
+            if index != 0 && index != stop_index && self.playlist_index_dir(index) != cur_dir {
+                cur_dir = self.playlist_index_dir(index);
+            }
+            while index != 0
+                && index != stop_index
+                && self.playlist_index_dir(index - 1) == *cur_dir
+            {
+                if !Self::dec_valid_files(files_left) {
+                    return None;
+                }
+                if let Some(prev_index) = self.fetch_prev_playlist_index(index, wrap) {
+                    index = prev_index;
+                } else {
+                    return None;
+                }
+            }
+            return Some(index);
         }
-        while index != 0 && index != stop_index && self.playlist_index_dir(index - 1) == *cur_dir {
-            Self::dec_valid_files(files_left).context("no valid left")?;
-            index = self
-                .fetch_prev_playlist_index(index, wrap)
-                .context("cannot fetch previous playlist index")?;
-        }
-        return Ok(index);
+        return None;
     }
 
-    fn dec_valid_files(x: &mut usize) -> Result<()> {
+    fn fetch_next_dir_playlist_index(
+        &self,
+        cur_index: usize,
+        wrap: bool,
+        index_after_dir_skip: &mut Option<usize>,
+        files_left: &mut usize,
+    ) -> Option<usize> {
+        if let Some(mut index) = self.fetch_next_playlist_index(cur_index, wrap, true) {
+            if index_after_dir_skip.is_none() {
+                let cur_dir = self.playlist_index_dir(cur_index);
+                while index != 0 && self.playlist_index_dir(index) == cur_dir {
+                    if !Self::dec_valid_files(files_left) {
+                        return None;
+                    }
+                    if let Some(next_index) = self.fetch_next_playlist_index(index, wrap, true) {
+                        index = next_index;
+                    } else {
+                        return None;
+                    }
+                }
+                *index_after_dir_skip = Some(index);
+            }
+            return Some(index);
+        }
+        return None;
+    }
+
+    fn fetch_prev_dir_playlist_index(
+        &self,
+        cur_index: usize,
+        start_index: usize,
+        wrap: bool,
+        index_after_dir_skip: &mut Option<usize>,
+        files_left: &mut usize,
+    ) -> Option<usize> {
+        if let Some(found_index) = index_after_dir_skip {
+            if let Some(next_index) = self.fetch_next_playlist_index(cur_index, wrap, false) {
+                if start_index != next_index
+                    && self.playlist_index_dir(next_index) == self.playlist_index_dir(cur_index)
+                {
+                    return Some(next_index);
+                }
+                if let Some(index) = self.fetch_first_playlist_index_in_dir(
+                    *found_index,
+                    start_index,
+                    wrap,
+                    files_left,
+                ) {
+                    *index_after_dir_skip = Some(index);
+                    return Some(index);
+                }
+                return None;
+            }
+            if let Some(index) =
+                self.fetch_first_playlist_index_in_dir(*found_index, start_index, wrap, files_left)
+            {
+                *index_after_dir_skip = Some(index);
+                return Some(index);
+            }
+            return None;
+        }
+        if let Some(index) =
+            self.fetch_first_playlist_index_in_dir(cur_index, start_index, wrap, files_left)
+        {
+            *index_after_dir_skip = Some(index);
+            return Some(index);
+        }
+        return None;
+    }
+
+    fn dec_valid_files(x: &mut usize) -> bool {
         if *x == 0 {
-            bail!("no valid files in the playlist");
+            eprintln_with_date("no valid files in the playlist");
+            return false;
         }
         *x -= 1;
-        return Ok(());
+        return true;
     }
 
-    fn move_and_play(&mut self, step: MoveTo, wrap: bool, user_navigation: bool) -> Result<()> {
+    fn move_and_play(&mut self, step: MoveTo, wrap: bool, user_navigation: bool) -> bool {
         let mut files_left = self.playlist.len();
         if files_left == 0 {
-            bail!("no files in the playlist");
+            eprintln_with_date("no files in the playlist");
         }
         let start_index = self.playlist_index;
         let mut cur_index = self.playlist_index;
         let mut index_after_dir_skip: Option<usize> = None;
         loop {
-            Self::dec_valid_files(&mut files_left)?;
-
-            let new_playlist_index = match step {
-                MoveTo::Next => self.fetch_next_playlist_index(cur_index, wrap, true)?,
-                MoveTo::Prev => self.fetch_prev_playlist_index(cur_index, wrap)?,
-                MoveTo::NextDir => {
-                    let mut index = self.fetch_next_playlist_index(cur_index, wrap, true)?;
-                    if index_after_dir_skip.is_none() {
-                        let cur_dir = self.playlist_index_dir(cur_index);
-                        while index != 0 && self.playlist_index_dir(index) == cur_dir {
-                            Self::dec_valid_files(&mut files_left)?;
-                            index = self.fetch_next_playlist_index(index, wrap, true)?;
-                        }
-                        index_after_dir_skip = Some(index);
-                    }
-                    index
-                }
-                MoveTo::PrevDir => {
-                    if let Some(found_index) = index_after_dir_skip {
-                        if let Ok(next_index) =
-                            self.fetch_next_playlist_index(cur_index, wrap, false)
-                        {
-                            if start_index != next_index
-                                && self.playlist_index_dir(next_index)
-                                    == self.playlist_index_dir(cur_index)
-                            {
-                                next_index
-                            } else {
-                                let index = self.fetch_first_playlist_index_in_dir(
-                                    found_index,
-                                    start_index,
-                                    wrap,
-                                    &mut files_left,
-                                )?;
-                                index_after_dir_skip = Some(index);
-                                index
-                            }
-                        } else {
-                            let index = self.fetch_first_playlist_index_in_dir(
-                                found_index,
-                                start_index,
-                                wrap,
-                                &mut files_left,
-                            )?;
-                            index_after_dir_skip = Some(index);
-                            index
-                        }
-                    } else {
-                        let index = self.fetch_first_playlist_index_in_dir(
-                            cur_index,
-                            start_index,
-                            wrap,
-                            &mut files_left,
-                        )?;
-                        index_after_dir_skip = Some(index);
-                        index
-                    }
-                }
-            };
-
-            if self
-                .play(Some(new_playlist_index), user_navigation)
-                .to_bool()
-            {
-                return Ok(());
+            if !Self::dec_valid_files(&mut files_left) {
+                return false;
             }
-            cur_index = self.playlist_index;
+
+            if let Some(new_playlist_index) = match step {
+                MoveTo::Next => self.fetch_next_playlist_index(cur_index, wrap, true),
+                MoveTo::Prev => self.fetch_prev_playlist_index(cur_index, wrap),
+                MoveTo::NextDir => self.fetch_next_dir_playlist_index(
+                    cur_index,
+                    wrap,
+                    &mut index_after_dir_skip,
+                    &mut files_left,
+                ),
+                MoveTo::PrevDir => self.fetch_prev_dir_playlist_index(
+                    cur_index,
+                    start_index,
+                    wrap,
+                    &mut index_after_dir_skip,
+                    &mut files_left,
+                ),
+            } {
+                if self
+                    .play(Some(new_playlist_index), user_navigation)
+                    .to_bool()
+                {
+                    return true;
+                }
+                cur_index = self.playlist_index;
+            }
         }
     }
 
-    fn next(&mut self, wrap: bool, user_navigation: bool) -> Result<()> {
+    fn next(&mut self, wrap: bool, user_navigation: bool) -> bool {
         return self.move_and_play(MoveTo::Next, wrap, user_navigation);
     }
 
-    fn prev(&mut self) -> Result<()> {
+    fn prev(&mut self) -> bool {
         return self.move_and_play(MoveTo::Prev, true, true);
     }
 
-    fn next_dir(&mut self) -> Result<()> {
+    fn next_dir(&mut self) -> bool {
         return self.move_and_play(MoveTo::NextDir, true, true);
     }
 
-    fn prev_dir(&mut self) -> Result<()> {
+    fn prev_dir(&mut self) -> bool {
         return self.move_and_play(MoveTo::PrevDir, true, true);
     }
 
@@ -515,7 +554,7 @@ impl PlayerThread {
                         .with_context(|| format!("cannot play track {index:?}"))
                         .to_bool()
                     {
-                        self.next(false, true).context("cannot play next track")?;
+                        self.next(false, true);
                     }
                 }
                 PlayerCmd::Stop => {
@@ -526,20 +565,19 @@ impl PlayerThread {
                 }
                 PlayerCmd::Next => {
                     self.stop();
-                    self.next(true, true).context("cannot play next track")?;
+                    self.next(true, true);
                 }
                 PlayerCmd::Prev => {
                     self.stop();
-                    self.prev().context("cannot play previous track")?;
+                    self.prev();
                 }
                 PlayerCmd::NextDir => {
                     self.stop();
-                    self.next_dir().context("cannot jump to next directory")?;
+                    self.next_dir();
                 }
                 PlayerCmd::PrevDir => {
                     self.stop();
-                    self.prev_dir()
-                        .context("cannot jump to previous directory")?;
+                    self.prev_dir();
                 }
                 PlayerCmd::Pause => {
                     self.pause().context("cannot pause")?;
@@ -640,7 +678,7 @@ impl PlayerThread {
         }
 
         if need_next_track {
-            if !self.next(false, false).to_bool() {
+            if !self.next(false, false) {
                 self.stop();
                 return false;
             }
