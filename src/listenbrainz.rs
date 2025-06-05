@@ -20,7 +20,11 @@ use crate::{
 
 const SUBMIT_ENDPOINT: &str = "https://api.listenbrainz.org/1/submit-listens";
 const VALIDATE_ENDPOINT: &str = "https://api.listenbrainz.org/1/validate-token";
-const MAX_IMPORT: usize = 25; // https://listenbrainz.readthedocs.io/en/production/dev/api/#listenbrainz.webserver.views.api_tools.MAX_LISTEN_SIZE
+
+// max number of listens in an import is 1000:
+// https://listenbrainz.readthedocs.io/en/latest/users/api/core.html#listenbrainz.webserver.views.api_tools.MAX_LISTENS_PER_REQUEST
+// but choose a lower value to not send a lot of huge repeated payloads if some tracks are non-submittable
+const MAX_IMPORT: usize = 100;
 
 fn skip_if_none_or_empty(x: &Option<String>) -> bool {
     if let Some(val) = x {
