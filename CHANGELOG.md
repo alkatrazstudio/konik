@@ -1,6 +1,15 @@
 # Konik - CHANGELOG
 
 
+## v0.3.1 (June 12, 2025)
+
+- Fixed: tray tooltip
+- Fixed: wrong ListenBrainz submits for tracks with existing but empty album name
+- Fixed: non-submittable listens from the ListenBrainz submit queue stuck in the file forever
+- Changed: increased batch submit size for ListenBrainz
+- Changed: playlist end is no longer logged as an error
+
+
 ## v0.3.0 (September 15, 2024)
 
 - Added: submit track duration to ListenBrainz
