@@ -79,6 +79,7 @@ pub fn get(url: &str, authorization: &str) -> Result<HttpResponse> {
         builder = builder.header("Authorization", authorization);
     }
     let response = builder
+        .header("User-Agent", user_agent())
         .call()
         .context("HTTP error")?;
     let result = response_to_result(response);
