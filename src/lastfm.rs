@@ -143,7 +143,7 @@ impl LastFM {
     }
 
     pub fn playing_now(
-        &self,
+        &mut self,
         artist: &str,
         album: &Option<String>,
         track: &str,
@@ -174,7 +174,7 @@ impl LastFM {
             .context("cannot get URL for playing_now")?;
 
         self.notify_about_running_api_thread();
-        thread_util::thread(
+        self.api_thread = Some(thread_util::thread(
             "Last.fm now playing API call",
             move || match Self::api_call::<NowPlayingResponse>(&url) {
                 Ok(response) => {
@@ -184,7 +184,7 @@ impl LastFM {
                     .context("cannot perform Last.fm API playing_now call")
                     .log(),
             },
-        );
+        ));
 
         return Ok(());
     }
