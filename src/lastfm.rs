@@ -136,14 +136,14 @@ impl LastFM {
         return self.session_key.is_some();
     }
 
-    fn wait_for_api_thread(&mut self) {
-        if let Some(t) = self.api_thread.take() {
-            t.join().to_anyhow().ignore_err();
+    fn notify_about_running_api_thread(&self) {
+        if self.api_thread.is_some() {
+            eprintln_with_date("The last LastFM thread is still running.");
         }
     }
 
     pub fn playing_now(
-        &mut self,
+        &self,
         artist: &str,
         album: &Option<String>,
         track: &str,
@@ -173,7 +173,7 @@ impl LastFM {
             .get_method_url("track.updateNowPlaying", &params)
             .context("cannot get URL for playing_now")?;
 
-        self.wait_for_api_thread();
+        self.notify_about_running_api_thread();
         thread_util::thread(
             "Last.fm now playing API call",
             move || match Self::api_call::<NowPlayingResponse>(&url) {
@@ -248,7 +248,7 @@ impl LastFM {
             .context("cannot get URL for scrobble")?;
 
         let items_arc = self.not_scrobbled.clone();
-        self.wait_for_api_thread();
+        self.notify_about_running_api_thread();
         self.api_thread = Some(thread_util::thread(
             "Last.fm scrobble API call",
             move || {
@@ -387,7 +387,7 @@ impl LastFM {
 
 impl Drop for LastFM {
     fn drop(&mut self) {
-        self.wait_for_api_thread();
+        self.notify_about_running_api_thread();
     }
 }
 

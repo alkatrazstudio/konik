@@ -263,9 +263,9 @@ impl ListenBrainz {
             .ignore_err();
     }
 
-    fn wait_for_api_thread(&mut self) {
-        if let Some(t) = self.api_thread.take() {
-            t.join().to_anyhow().ignore_err();
+    fn notify_about_running_api_thread(&self) {
+        if self.api_thread.is_some() {
+            eprintln_with_date("The last ListenBrainz thread is still running.");
         }
     }
 
@@ -280,7 +280,7 @@ impl ListenBrainz {
         E: FnOnce(String) + Send + 'static,
     {
         let json = serde_json::to_string(&request).context("cannot serialize payload")?;
-        self.wait_for_api_thread();
+        self.notify_about_running_api_thread();
         if let Some(token) = &self.token {
             let auth = Self::authorization_header_from_token(token);
             let handle = thread_util::thread("ListenBrainz submit API call", move || {
@@ -378,6 +378,6 @@ impl AdditionalInfo {
 
 impl Drop for ListenBrainz {
     fn drop(&mut self) {
-        self.wait_for_api_thread();
+        self.notify_about_running_api_thread();
     }
 }
