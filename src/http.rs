@@ -4,6 +4,7 @@
 use crate::project_info;
 use anyhow::{Context, Result};
 use std::sync::{LazyLock, Mutex};
+use std::time::Duration;
 use ureq::config::Config;
 use ureq::http::Response;
 use ureq::tls::{TlsConfig, TlsProvider};
@@ -24,6 +25,7 @@ pub fn new_agent() -> Agent {
                         .provider(TlsProvider::NativeTls)
                         .build(),
                 )
+                .timeout_global(Some(Duration::from_secs(10)))
                 .http_status_as_error(false)
                 .build(),
         )
