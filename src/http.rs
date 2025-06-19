@@ -24,6 +24,7 @@ pub fn new_agent() -> Agent {
                         .provider(TlsProvider::NativeTls)
                         .build(),
                 )
+                .http_status_as_error(false)
                 .build(),
         )
     });
@@ -64,9 +65,6 @@ pub fn post(
         .header("User-Agent", user_agent())
         .header("Content-Type", content_type)
         .header("Content-Length", payload.len().to_string())
-        .config()
-        .http_status_as_error(false)
-        .build()
         .send(payload)
         .context("HTTP error")?;
     let result = response_to_result(response);
@@ -79,9 +77,6 @@ pub fn get(url: &str, authorization: &str) -> Result<HttpResponse> {
         builder = builder.header("Authorization", authorization);
     }
     let response = builder
-        .config()
-        .http_status_as_error(false)
-        .build()
         .call()
         .context("HTTP error")?;
     let result = response_to_result(response);
