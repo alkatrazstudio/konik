@@ -46,7 +46,7 @@ serde_json = "=1.0.140"
 signal-hook = "=0.3.18"
 souvlaki = "=0.8.2"
 symphonia = { version = "=0.5.4", default-features = false, features = ["flac", "mp3", "ogg", "vorbis"] }
-ureq = { version = "=3.0.11", default-features = false, features = ["native-tls"] }
+ureq = { git = "https://github.com/algesten/ureq", rev = "2906f14b5c33de581fdab7e1dd597e9c72a73958", default-features = false, features = ["native-tls"] }
 url = "=2.5.4"
 walkdir = "=2.5.0"
 
