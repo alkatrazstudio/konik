@@ -1,5 +1,11 @@
 # Konik - CHANGELOG
 
+## v0.3.2 (June 22, 2025)
+
+Fixed: application hangs on a scrobble request if the previous one is still running
+Fixed: missing User-Agent in GET requests
+Changed: limit the duration of the network requests
+
 
 ## v0.3.1 (June 12, 2025)
 
