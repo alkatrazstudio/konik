@@ -263,8 +263,8 @@ impl ListenBrainz {
             .ignore_err();
     }
 
-    fn notify_about_running_api_thread(&self) {
-        if self.api_thread.is_some() {
+    fn notify_about_running_api_thread(&mut self) {
+        if self.api_thread.take().is_some() {
             eprintln_with_date("The last ListenBrainz thread is still running.");
         }
     }
