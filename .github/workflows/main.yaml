@@ -12,7 +12,7 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-24.04
-    container: rust:1.87.0
+    container: rust:1.88.0
 
     steps:
     - name: Checkout
@@ -71,7 +71,7 @@ jobs:
       run: |
         mv artifacts/release-linux/konik-linux.tar.xz artifacts/release-linux/konik-linux-${{ steps.version.outputs.version }}.tar.xz
     - name: Release
-      uses: softprops/action-gh-release@v2.2.2
+      uses: softprops/action-gh-release@v2.3.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
