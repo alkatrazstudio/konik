@@ -3,7 +3,7 @@
 
 use std::sync::{Arc, Mutex};
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, anyhow, bail};
 use notify_rust::Notification;
 
 use crate::{err_util::IgnoreErr, project_info, thread_util};
@@ -37,7 +37,18 @@ impl Popup {
         let cur_handle_id;
         if let Some(handle_id) = *handle_id_guarded {
             cur_handle_id = Some(handle_id);
-            handle = popup.id(handle_id).show().context("cannot update popup")?;
+            handle = match popup.id(handle_id).show() {
+                Ok(handle) => handle,
+                Err(e) => {
+                    if e.to_string() == "Created too many similar notifications in quick succession"
+                    {
+                        // This warning is useless, so we ignore it without logging it.
+                        // But the only way to this is to compare the text of the error.
+                        return Ok(());
+                    }
+                    bail!(anyhow!(e).context("cannot update popup"));
+                }
+            }
         } else {
             handle = popup.show().context("cannot create popup")?;
             *handle_id_guarded = Some(handle.id());
