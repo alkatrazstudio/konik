@@ -132,7 +132,7 @@ impl CueSheet {
                     let start_next = &tracks[tracks.len() - 1].start;
                     let duration = start_next.saturating_sub(start);
                     if duration.is_zero() {
-                        bail!("track {} has zero length", index);
+                        bail!("track {index} has zero length");
                     }
                     Some(duration)
                 };
@@ -148,7 +148,7 @@ impl CueSheet {
         }
 
         if tracks.is_empty() {
-            bail!("no tracks found in CUE file: {}", filename);
+            bail!("no tracks found in CUE file: {filename}");
         }
 
         tracks.reverse();
@@ -179,7 +179,7 @@ impl CueSheet {
                 return Ok(track);
             }
         }
-        bail!("trying to get out-of-bounds track {}", index);
+        bail!("trying to get out-of-bounds track {index}");
     }
 
     fn opt_str(s: &[String]) -> Option<String> {
@@ -207,14 +207,14 @@ impl CueSheet {
         let rx_str = String::from(r"(?i)^") + &regex::escape(tag) + r#"\s+(.+)"?$"#;
         let rx = Regex::new(&rx_str).unwrap();
         for comment in &cue.comments.0 {
-            if let Some(m) = rx.captures(comment) {
-                if let Some(m) = m.get(1) {
-                    let s = m.as_str();
-                    if s.starts_with('"') && s.ends_with('"') && s.len() > 1 {
-                        return Some(s[1..s.len() - 1].trim().to_string());
-                    }
-                    return Some(s.trim().to_string());
+            if let Some(m) = rx.captures(comment)
+                && let Some(m) = m.get(1)
+            {
+                let s = m.as_str();
+                if s.starts_with('"') && s.ends_with('"') && s.len() > 1 {
+                    return Some(s[1..s.len() - 1].trim().to_string());
                 }
+                return Some(s.trim().to_string());
             }
         }
         return None;
@@ -325,7 +325,7 @@ impl CueFactory {
 
         let sheet = match CueSheet::new(&filename) {
             Ok(sheet) => Some(Arc::new(sheet)),
-            Err(e) => bail!("reading CUE sheet {}: {}", filename, e),
+            Err(e) => bail!("reading CUE sheet {filename}: {e}"),
         };
         self.sheets.insert(filename, sheet.clone());
         return Ok(sheet);

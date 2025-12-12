@@ -27,10 +27,10 @@ const VALIDATE_ENDPOINT: &str = "https://api.listenbrainz.org/1/validate-token";
 const MAX_IMPORT: usize = 100;
 
 fn skip_if_none_or_empty(x: &Option<String>) -> bool {
-    if let Some(val) = x {
-        if !val.is_empty() {
-            return false;
-        }
+    if let Some(val) = x
+        && !val.is_empty()
+    {
+        return false;
     }
     return true;
 }
@@ -228,23 +228,22 @@ impl ListenBrainz {
                 eprintln_with_date(&json);
                 let mut items = items_arc.lock().unwrap();
                 let mut need_save = true;
-                if let Ok(reject) = serde_json::from_str::<RejectResponse>(&json) {
-                    if let Some(pos) = items.iter().position(|i| i.timestamp == reject.listened_at)
-                    {
-                        let item = &items[pos];
-                        if item.timestamp == timestamp {
-                            need_save = false; // we are removing the current listen, which is not in the file
-                        }
-                        eprintln_with_date(format!(
-                            "Removing {}/{}/{} from the ListenBrainz not submitted tracks ({}: {})",
-                            &item.artist,
-                            &item.album.clone().unwrap_or_default(),
-                            &item.track,
-                            reject.code,
-                            reject.error
-                        ));
-                        items.remove(pos);
+                if let Ok(reject) = serde_json::from_str::<RejectResponse>(&json)
+                    && let Some(pos) = items.iter().position(|i| i.timestamp == reject.listened_at)
+                {
+                    let item = &items[pos];
+                    if item.timestamp == timestamp {
+                        need_save = false; // we are removing the current listen, which is not in the file
                     }
+                    eprintln_with_date(format!(
+                        "Removing {}/{}/{} from the ListenBrainz not submitted tracks ({}: {})",
+                        &item.artist,
+                        &item.album.clone().unwrap_or_default(),
+                        &item.track,
+                        reject.code,
+                        reject.error
+                    ));
+                    items.remove(pos);
                 }
                 if need_save {
                     Self::save_not_submitted_guarded(&items);
@@ -335,7 +334,10 @@ impl ListenBrainz {
             let session_key = Self::token_file();
             bail!(
                 "there is already a stored token at {:?}. Remove this file to authenticate again.",
-                session_key.filename().context("no token filename")?
+                session_key
+                    .filename()
+                    .context("no token filename")?
+                    .display()
             );
         }
         let token = cli::read_line("ListenBrainz token: ").context("cannot read token")?;

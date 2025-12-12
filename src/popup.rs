@@ -59,10 +59,10 @@ impl Popup {
 
         handle.on_close(|| {
             let mut handle_id_guarded = handle_id_arc.lock().unwrap();
-            if let Some(handle_id) = *handle_id_guarded {
-                if Some(handle_id) == cur_handle_id {
-                    *handle_id_guarded = None;
-                }
+            if let Some(handle_id) = *handle_id_guarded
+                && Some(handle_id) == cur_handle_id
+            {
+                *handle_id_guarded = None;
             }
         });
         return Ok(());

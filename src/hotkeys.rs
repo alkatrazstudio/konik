@@ -77,12 +77,11 @@ impl HotKeys {
         let stop_flag = self.stop_flag.clone();
         let thread = thread_util::thread("hotkeys manager", move || {
             while !*stop_flag.lock().unwrap() {
-                if let Ok(event) = GlobalHotKeyEvent::receiver().recv_timeout(THREAD_SLEEP) {
-                    if event.state == HotKeyState::Pressed {
-                        if let Some(action) = id_action_map.get(&event.id) {
-                            action_func(*action);
-                        }
-                    }
+                if let Ok(event) = GlobalHotKeyEvent::receiver().recv_timeout(THREAD_SLEEP)
+                    && event.state == HotKeyState::Pressed
+                    && let Some(action) = id_action_map.get(&event.id)
+                {
+                    action_func(*action);
                 }
             }
             manager.unregister_all(&hotkeys).ignore_err();

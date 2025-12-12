@@ -29,7 +29,7 @@ fn run_method(path: &str, method: &str) -> Result<()> {
                 .method_call("org.freedesktop.FileManager1", method, (vec![url_str], ""))
                 .with_context(|| format!("failed to call D-Bus method {method} on {url_str}"))?;
         }
-        Err(()) => bail!("can't transform a path into URL: {}", path),
+        Err(()) => bail!("can't transform a path into URL: {path}"),
     }
     return Ok(());
 }
