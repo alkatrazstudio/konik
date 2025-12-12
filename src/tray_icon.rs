@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // 🄯 2023, Alexey Parfenov <zxed@alkatrazstudio.net>
 
+use std::io::Cursor;
 use std::sync::Arc;
 
 use crate::project_info;
@@ -56,9 +57,9 @@ impl TrayIcon {
     }
 
     fn create_ico(bytes: &[u8]) -> Result<Icon> {
-        let decoder = Decoder::new(bytes);
+        let decoder = Decoder::new(Cursor::new(bytes));
         let mut reader = decoder.read_info().context("cannot read icon info")?;
-        let mut buf = vec![0; reader.output_buffer_size()];
+        let mut buf = vec![0; reader.output_buffer_size().context("reading PNG buffer size")?];
         let info = reader
             .next_frame(&mut buf)
             .context("cannot read icon frame")?;

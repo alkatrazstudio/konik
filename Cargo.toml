@@ -10,7 +10,7 @@ license = "GPL-3.0-only"
 publish = false
 readme = "README.md"
 repository = "https://github.com/alkatrazstudio/konik"
-rust-version = "1.88.0"
+rust-version = "1.92.0"
 description = "Music player controlled by global hotkeys"
 
 [package.metadata]
@@ -19,43 +19,43 @@ qualifier = "net"
 title = "Konik"
 
 [dependencies]
-alphanumeric-sort = "=1.5.3"
-alsa = "=0.9.1"
-anyhow = "=1.0.98"
-chrono = "=0.4.41"
-clap = { version = "=4.5.40", features = ["derive"] }
+alphanumeric-sort = "=1.5.4"
+alsa = "=0.10.0"
+anyhow = "=1.0.100"
+chrono = "=0.4.42"
+clap = { version = "=4.5.53", features = ["derive"] }
 cpal = "=0.16.0"
 cuna = "=0.7.0"
-dbus = "=0.9.7"
+dbus = "=0.9.10"
 directories = "=6.0.0"
 fd-lock = "=4.0.4"
 global-hotkey = "=0.7.0"
 html-escape = "=0.2.13"
 interprocess = { version = "=2.2.3", default-features = false }
-ksni = { version = "=0.3.1", features = ["blocking"] }
+ksni = { version = "=0.3.2", features = ["blocking"] }
 lofty = "=0.22.4"
 md5 = "=0.8.0"
 notify-rust = { version = "=4.11.7", default-features = false, features = ["d"] }
 num-traits = "=0.2.19"
 path-absolutize = "=3.1.1"
-png = "=0.17.16"
-regex = "=1.11.1"
+png = "=0.18.0"
+regex = "=1.12.2"
 rpassword = "=7.4.0"
-serde = "=1.0.219"
-serde_json = "=1.0.140"
+serde = "=1.0.228"
+serde_json = "=1.0.145"
 signal-hook = "=0.3.18"
 souvlaki = "=0.8.3"
-symphonia = { version = "=0.5.4", default-features = false, features = ["flac", "mp3", "ogg", "vorbis"] }
-ureq = { git = "https://github.com/algesten/ureq", rev = "2906f14b5c33de581fdab7e1dd597e9c72a73958", default-features = false, features = ["native-tls"] }
-url = "=2.5.4"
+symphonia = { version = "=0.5.5", default-features = false, features = ["flac", "mp3", "ogg", "vorbis"] }
+ureq = { version = "=3.1.4", default-features = false, features = ["native-tls"] }
+url = "=2.5.7"
 walkdir = "=2.5.0"
 
 [build-dependencies]
-anyhow = "=1.0.98"
+anyhow = "=1.0.100"
 built = { version = "=0.8.0", features = ["chrono", "git2"] }
-cargo_metadata = "=0.20.0"
+cargo_metadata = "=0.23.1"
 handlebars = "=6.3.2"
-termimad = "=0.33.0"
+termimad = "=0.34.1"
 
 [profile.release]
 codegen-units = 1
