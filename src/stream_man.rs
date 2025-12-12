@@ -30,5 +30,5 @@ pub fn open(path: &str) -> Result<Box<dyn Stream>> {
         return Ok(stream);
     }
 
-    bail!("file not supported: {}", path);
+    bail!("file not supported: {path}");
 }

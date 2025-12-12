@@ -155,12 +155,12 @@ impl LastFM {
             ("track".to_string(), track.to_string()),
         ];
         if let Some(session_key) = &self.session_key {
-            params.push(("sk".to_string(), session_key.to_string()));
+            params.push(("sk".to_string(), session_key.clone()));
         } else {
             bail!("Last.fm session key is not set");
         }
         if let Some(album) = album {
-            params.push(("album".to_string(), album.to_string()));
+            params.push(("album".to_string(), album.clone()));
         }
         if let Some(number) = number {
             params.push(("trackNumber".to_string(), number.to_string()));
@@ -350,7 +350,7 @@ impl LastFM {
             let session_key = Self::session_key_file();
             bail!(
                 "there is already a stored session key at {:?}. Remove this file to authenticate again.",
-                session_key.filename()?
+                session_key.filename()?.display()
             );
         }
 

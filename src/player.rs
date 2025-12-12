@@ -227,7 +227,7 @@ impl PlayerThread {
     fn play(&mut self, index: Option<usize>, user_navigation: bool) -> Result<()> {
         let index = index.unwrap_or(self.playlist_index);
         if index >= self.playlist.len() {
-            bail!("index {} is not in the playlist", index);
+            bail!("index {index} is not in the playlist");
         }
         let track = &self.playlist[index];
         self.playlist_index = index;
@@ -449,10 +449,10 @@ impl PlayerThread {
     }
 
     fn send_playlist_index(&mut self, user_navigation: bool) {
-        if let Some(index) = self.sent_playlist_index {
-            if index == self.playlist_index {
-                return;
-            }
+        if let Some(index) = self.sent_playlist_index
+            && index == self.playlist_index
+        {
+            return;
         }
 
         if self.playlist_index >= self.playlist.len() {

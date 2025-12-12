@@ -162,7 +162,7 @@ impl<T, E> IgnoreErr<T, E> for core::result::Result<T, E> {
     {
         return match self {
             Ok(val) => Ok(val),
-            Err(e) => bail!("{:?}", e),
+            Err(e) => bail!("{e:?}"),
         };
     }
 }

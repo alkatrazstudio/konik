@@ -44,7 +44,7 @@ impl SysVol {
         return Ok(Self { mixer, master_id });
     }
 
-    fn master(&self) -> Result<Master> {
+    fn master(&'_ self) -> Result<Master<'_>> {
         let selem = self
             .mixer
             .find_selem(&self.master_id)

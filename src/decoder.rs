@@ -163,32 +163,30 @@ impl Decoder {
             )
         })?;
         if let (Some(new_sheet), Some(new_index)) = (new_sheet, track.index) {
-            if let (Some(_), Some(cur_sheet)) = (&mut self.stream, &self.cue_sheet) {
-                if new_sheet.source_filename == cur_sheet.source_filename {
-                    if let Some(cur_track) = &self.track {
-                        if let Some(cur_index) = cur_track.index {
-                            if new_index == cur_index + 1 {
-                                if let Some(file_meta) = &self.file_meta {
-                                    self.new_track_meta =
-                                        new_sheet.track_meta(new_index, file_meta).to_option();
-                                }
-                                self.track = Some(track.clone());
-                                self.at_end = false;
-                                return Ok(());
-                            }
-                        }
-                    }
-                    self.track_meta = None;
-                    self.track = Some(track.clone());
-                    self.seek_to(Duration::ZERO)
-                        .context("cannot seek to the start")?;
+            if let (Some(_), Some(cur_sheet)) = (&mut self.stream, &self.cue_sheet)
+                && new_sheet.source_filename == cur_sheet.source_filename
+            {
+                if let Some(cur_track) = &self.track
+                    && let Some(cur_index) = cur_track.index
+                    && new_index == cur_index + 1
+                {
                     if let Some(file_meta) = &self.file_meta {
                         self.new_track_meta =
                             new_sheet.track_meta(new_index, file_meta).to_option();
                     }
+                    self.track = Some(track.clone());
                     self.at_end = false;
                     return Ok(());
                 }
+                self.track_meta = None;
+                self.track = Some(track.clone());
+                self.seek_to(Duration::ZERO)
+                    .context("cannot seek to the start")?;
+                if let Some(file_meta) = &self.file_meta {
+                    self.new_track_meta = new_sheet.track_meta(new_index, file_meta).to_option();
+                }
+                self.at_end = false;
+                return Ok(());
             }
             let new_stream = stream_man::open(&new_sheet.source_filename)
                 .with_context(|| format!("error opening {}", &new_sheet.source_filename))?;
@@ -371,13 +369,13 @@ impl Decoder {
     }
 
     pub fn create_output_stream(&self) -> Option<cpal::Stream> {
-        if self.stream.is_some() {
-            if let Some(meta) = &self.packet_meta {
-                return Some(
-                    create_output_stream(meta, &self.buf, &self.volume)
-                        .expect("cannot create output stream"),
-                );
-            }
+        if self.stream.is_some()
+            && let Some(meta) = &self.packet_meta
+        {
+            return Some(
+                create_output_stream(meta, &self.buf, &self.volume)
+                    .expect("cannot create output stream"),
+            );
         }
         return None;
     }

@@ -65,7 +65,7 @@ where
         }));
     }
 
-    fn sock_name(name: &str) -> Result<Name> {
+    fn sock_name(name: &'_ str) -> Result<Name<'_>> {
         let sock_name = if GenericNamespaced::is_supported() {
             name.to_ns_name::<GenericNamespaced>()?
         } else {
