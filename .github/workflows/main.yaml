@@ -70,12 +70,12 @@ jobs:
 
     - name: Rename
       run: |
-        mv artifacts/release-linux/konik-linux.tar.xz artifacts/release-linux/konik-linux-${{ steps.version.outputs.version }}.tar.xz
+        mv artifacts/konik-linux.tar.xz artifacts/konik-linux-${{ steps.version.outputs.version }}.tar.xz
     - name: Release
       uses: softprops/action-gh-release@v2.5.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         files: |
-          artifacts/release-linux/*.tar.xz
+          artifacts/*.tar.xz
         body_path: RELEASE.md
